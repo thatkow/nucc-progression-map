@@ -162,20 +162,19 @@ img.preview {
     async function main() {
       const cors = "https://api.allorigins.win/raw?url=";
 
-      // ✅ Load definition.json
-      const defURL = cors + encodeURIComponent("https://drive.google.com/uc?export=download&id=1SS7UDnTV-yOPLNldTvB8Wqt0rY9KeFQ3");
-      const defResp = await fetch(defURL);
-      const definition = await defResp.json();
-      console.log("✅ Loaded definition.json:", definition);
+     const base = "https://<username>.github.io/<repo-name>/";
 
-      // ✅ Load user progress from Google Sheets
-      const timestamp = new Date().getTime();
-      const csvURL = cors + encodeURIComponent(
-        "https://docs.google.com/spreadsheets/d/1jUTLoRPed6HDuUb9cCZXaPJ9GRIjEfXpbYd63jPk32I/export?format=csv&cachebust=" + timestamp
-      );
-      const csvResp = await fetch(csvURL);
-      const csvText = await csvResp.text();
-      console.log("✅ Loaded user progress CSV:", csvText);
+    // ✅ Load definition.json
+    const defURL = base + "definition.json";
+    const defResp = await fetch(defURL);
+    const definition = await defResp.json();
+    console.log("✅ Loaded definition.json:", definition);
+
+    // ✅ Load user progress CSV
+    const csvURL = base + "user_progress.csv";
+    const csvResp = await fetch(csvURL);
+    const csvText = await csvResp.text();
+    console.log("✅ Loaded user progress CSV:", csvText);
 
       // Parse CSV → userProgress object
       const rows = csvText.trim().split("\n").map(r => r.split(","));
