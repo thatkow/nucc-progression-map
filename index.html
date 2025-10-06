@@ -44,7 +44,7 @@
     const defText = await defResp.text();
     console.log("✅ Loaded definition.csv:", defText);
 
-    // Proper CSV parsing with quotes
+    // Proper CSV parsing with quoted fields
     const rows = defText.trim().split(/\r?\n/).map(r =>
       r.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, "")) || []
     );
@@ -82,7 +82,7 @@
       description: n.description
     })));
 
-    // 🔗 Build edges from prereq
+    // 🔗 Build edges from prereq column
     const edgesArr = [];
     definition.forEach(n => {
       if (n.prereq && n.prereq.trim() !== "") {
@@ -112,6 +112,10 @@
     const network = new vis.Network(container, data, options);
     network.fit({ animation: false });
 
+    // 🟩 Preserve original colors
+    const originalColors = {};
+    nodes.forEach(n => originalColors[n.id] = n.color);
+
     // 🎛️ Populate user select
     const select = document.getElementById('user-select');
     users.forEach(u => {
@@ -121,32 +125,54 @@
       select.appendChild(opt);
     });
 
-    // 👤 Highlight user progress
+    // 👤 Highlight user progress (keep colors same, grey others)
     select.addEventListener('change', () => {
       const user = select.value;
       const progress = userProgress[user] || {};
-      nodes.forEach(n => {
-        const completed = progress[n.id];
-        nodes.update({ id: n.id, color: completed ? n.color : "#cccccc" });
-      });
+
+      // Reset all nodes
+      nodes.forEach(n => nodes.update({ id: n.id, color: originalColors[n.id] }));
+
+      // Grey out not completed
+      if (user) {
+        nodes.forEach(n => {
+          const completed = progress[n.id];
+          if (!completed) nodes.update({ id: n.id, color: "#cccccc" });
+        });
+      }
     });
 
-    // 🖱️ Node click info
+    // 🖱️ Node click info + auto-load image from /images/
     network.on("click", params => {
       if (params.nodes.length) {
         const node = nodes.get(params.nodes[0]);
         const info = document.getElementById('info-text');
+        const imagePanel = document.getElementById('image-wrapper');
         info.innerHTML = `
           <h3>${node.id}</h3>
           <b>Category:</b> ${node.category}<br>
           <b>Sign-off:</b> ${node.signoff}<br><br>
           <div style="white-space:pre-line">${node.description}</div>
         `;
+
+        // Auto-detect image by node name
+        const imgName = encodeURIComponent(node.id.replace(/\s+/g, " ")) + ".png";
+        const imgURL = base + "images/" + imgName;
+        const testImg = new Image();
+        testImg.onload = () => {
+          imagePanel.innerHTML = `<img src="${imgURL}" class="preview" alt="${node.id} image">`;
+        };
+        testImg.onerror = () => {
+          imagePanel.innerHTML = "";
+        };
+        testImg.src = imgURL;
       }
     });
   }
 
   main();
   </script>
+
+
 </body>
 </html>
