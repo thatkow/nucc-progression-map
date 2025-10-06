@@ -2,7 +2,7 @@ name: Sync Google Sheets to Data Files
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # every 30 minutes
+    - cron: "*/30 * * * *"  # every 30 minutes
   workflow_dispatch:         # manual trigger
 
 jobs:
@@ -30,6 +30,6 @@ jobs:
             echo "No changes."
           else
             git add user_progress.csv definition.csv definition.json || true
-            git commit -m "🔄 Auto-update from Google Sheets"
+            git commit -am "🔄 Auto-update from Google Sheets"
             git push
           fi
