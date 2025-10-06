@@ -355,7 +355,7 @@ window.addEventListener('load', function() {
     }
   });
 
-  networkContainer.addEventListener('wheel', event => event.preventDefault(), {passive: false});
+  // Enable zoom, disable other navigation
   document.addEventListener('keydown', e => e.preventDefault());
 
   document.getElementById('user-select').addEventListener('change', function() {
@@ -434,7 +434,7 @@ window.addEventListener('load', function() {
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {"physics": {"enabled": false}, "interaction": {"dragNodes": false, "dragView": false, "zoomView": false, "selectable": true, "multiselect": false, "navigationButtons": false, "keyboard": false}, "edges": {"smooth": false, "arrows": {"to": {"enabled": true, "scaleFactor": 0.8}}, "color": {"color": "#333333"}}, "nodes": {"borderWidth": 1}};
+                  var options = {"physics": {"enabled": false}, "interaction": {"dragNodes": false, "dragView": false, "zoomView": true, "selectable": true, "multiselect": false, "navigationButtons": false, "keyboard": false}, "edges": {"smooth": false, "arrows": {"to": {"enabled": true, "scaleFactor": 0.8}}, "color": {"color": "#333333"}}, "nodes": {"borderWidth": 1}};
 
                   
 
