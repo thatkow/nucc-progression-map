@@ -4,45 +4,31 @@
   <meta charset="UTF-8" />
   <title>NUCC Progression Map</title>
   <script src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css" rel="stylesheet" />
   <style>
-    html, body { margin: 0; height: 100%; width: 100%; overflow: hidden; font-family: Arial, sans-serif; }
-    #split-container { display: flex; height: 100%; width: 100%; }
-    #graph-div { flex: 2; border-right: 1px solid #ccc; overflow: hidden; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
+    #split-container { display: flex; flex-direction: row; height: 100%; width: 100%; }
+    #graph-div { flex: 2; border-right: 1px solid #ccc; }
     #info-container { flex: 1; display: flex; flex-direction: column; height: 100%; }
-    #info-panel { flex: 2; padding: 15px; overflow-y: auto; background-color: #f9f9f9; }
-    #user-panel { flex: 0 0 100px; padding: 10px; border-top: 1px solid #ccc; background: #fff; }
-    select { width: 100%; font-size: 14px; padding: 4px; margin-top: 6px; }
-    #image-wrapper img { max-height: 45vh; width: auto; max-width: 100%; object-fit: contain; border: 1px solid #bbb; border-radius: 4px; background: #fff; }
-    #spinner {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255,255,255,0.8); display: flex; align-items: center;
-      justify-content: center; font-size: 20px; z-index: 9999;
-    }
-    @media (max-width: 800px) {
-      #split-container { flex-direction: column; }
-      #graph-div { flex: 1; height: 33%; border-right: none; border-bottom: 1px solid #ccc; }
-      #info-container { flex: 1; }
-      #image-wrapper img { max-height: 30vh; }
-      #user-panel { flex: 0 0 80px; }
-    }
+    #info-panel { flex: 1; padding: 10px; overflow-y: auto; background-color: #fafafa; }
+    #image-wrapper { text-align: center; margin-top: 10px; }
+    img.preview { max-width: 100%; border-radius: 4px; }
+    #user-panel { border-top: 1px solid #ccc; padding: 10px; background-color: #fff; }
+    select { width: 100%; padding: 5px; }
   </style>
 </head>
 <body>
-  <div id="spinner">⏳ Loading progression map...</div>
-  <div id="split-container" style="display:none;">
+  <div id="split-container">
     <div id="graph-div"></div>
     <div id="info-container">
       <div id="info-panel">
-        <div id="info-text"><h3>Select a node</h3></div>
+        <h3>Select a node</h3>
+        <div id="info-text"></div>
         <div id="image-wrapper"></div>
       </div>
       <div id="user-panel">
         <b>Show progress for:</b><br>
-        <select id="user-select">
-          <option value="">— Select user —</option>
-        </select>
+        <select id="user-select"><option value="">— Select user —</option></select>
       </div>
     </div>
   </div>
@@ -52,118 +38,112 @@
     const base = "https://thatkow.github.io/nucc-progression-map/";
     const cachebust = "?v=" + new Date().getTime();
 
-    // ✅ Load definition.csv (with cache-bust)
+    // ✅ Load definition.csv
     const defURL = base + "definition.csv" + cachebust;
     const defResp = await fetch(defURL);
     const defText = await defResp.text();
     console.log("✅ Loaded definition.csv:", defText);
 
-    // 🔄 Parse CSV safely (handles quoted fields)
-    const parsedDef = Papa.parse(defText, { header: true, skipEmptyLines: true });
-    const definition = parsedDef.data;
+    // Proper CSV parsing with quotes
+    const rows = defText.trim().split(/\r?\n/).map(r =>
+      r.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, "")) || []
+    );
+    const headers = rows.shift();
+    const definition = rows.map(row => Object.fromEntries(row.map((v, i) => [headers[i], v])));
     console.log("✅ Parsed definition data:", definition);
 
-    // ✅ Build edges from prereq
-    const edges = [];
-    definition.forEach(row => {
-      if (row.prereq && row.prereq.trim() !== "") {
-        row.prereq.split(";").forEach(pr => {
-          const source = pr.trim();
-          if (source) edges.push({ from: source, to: row.id });
-        });
-      }
-    });
-    console.log("✅ Built edges:", edges);
-
-    // ✅ Load user progress CSV (with cache-bust)
+    // ✅ Load user progress CSV
     const csvURL = base + "user_progress.csv" + cachebust;
     const csvResp = await fetch(csvURL);
     const csvText = await csvResp.text();
     console.log("✅ Loaded user progress CSV:", csvText);
 
-    const parsedUsers = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    const userRows = parsedUsers.data;
-    const users = userRows.map(r => r.user);
-    console.log("✅ Parsed users:", users);
-
-    const userProgress = {};
-    userRows.forEach(row => {
-      const uname = row.user;
-      userProgress[uname] = {};
-      Object.keys(row).forEach(key => {
-        if (key !== "user" && row[key]) userProgress[uname][key] = row[key];
-      });
-    });
+    const csvRows = csvText.trim().split(/\r?\n/).map(r => r.split(","));
+    const csvHeaders = csvRows.shift();
+    const users = csvRows.map(r => r[0]);
+    const userProgress = Object.fromEntries(
+      csvRows.map(r => [r[0], Object.fromEntries(csvHeaders.slice(1).map((c, i) => [c, r[i + 1]]))])
+    );
     console.log("✅ Parsed user progress:", userProgress);
 
-    // ✅ Build network
+    const container = document.getElementById('graph-div');
+
+    // 🧭 Build nodes
     const nodes = new vis.DataSet(definition.map(n => ({
       id: n.id,
       label: n.id,
       title: n.description,
-      shape: "box",
       color: n.color,
-      x: parseFloat(n.x),
-      y: parseFloat(n.y),
+      x: Number(n.x),
+      y: Number(n.y),
       fixed: { x: true, y: true },
       category: n.category,
       signoff: n.signoff,
-      imagefile: n.image || "",
-      font: { size: 16, face: "arial" }
+      description: n.description
     })));
-    const edgesData = new vis.DataSet(edges);
 
-    const container = document.getElementById("graph-div");
-    const data = { nodes, edges: edgesData };
+    // 🔗 Build edges from prereq
+    const edgesArr = [];
+    definition.forEach(n => {
+      if (n.prereq && n.prereq.trim() !== "") {
+        n.prereq.split(";").forEach(p => {
+          const prereq = p.trim();
+          if (prereq) edgesArr.push({ from: prereq, to: n.id, arrows: "to" });
+        });
+      }
+    });
+    const edges = new vis.DataSet(edgesArr);
+    console.log("✅ Built edges:", edgesArr);
+
+    const data = { nodes, edges };
+
+    // ⚙️ Network options
     const options = {
       physics: { enabled: false },
       interaction: {
-        dragNodes: false, dragView: false, zoomView: true, selectable: true,
-        multiselect: false, navigationButtons: false, keyboard: false
+        dragNodes: false,
+        dragView: true,
+        zoomView: true
       },
-      edges: { smooth: false, arrows: { to: { enabled: true, scaleFactor: 0.8 } }, color: { color: "#333" } },
-      nodes: { borderWidth: 1 }
+      edges: { smooth: false, color: "#333" },
+      nodes: { shape: "box", borderWidth: 1 }
     };
+
     const network = new vis.Network(container, data, options);
+    network.fit({ animation: false });
 
-    // ✅ Populate user dropdown
-    const sel = document.getElementById("user-select");
-    sel.innerHTML += users.map(u => `<option value="${u}">${u}</option>`).join("");
-
-    // ✅ Node click → show info
-    network.on("click", params => {
-      if (params.nodes.length > 0) {
-        const nodeId = params.nodes[0];
-        const node = nodes.get(nodeId);
-        const info = document.getElementById("info-text");
-        const image = document.getElementById("image-wrapper");
-
-        info.innerHTML = `
-          <h3>${node.label}</h3>
-          <b>Category:</b> ${node.category}<br>
-          <b>Sign-off:</b> ${node.signoff}<br><br>
-          <div style="white-space:pre-wrap;">${node.title}</div><br>
-        `;
-        image.innerHTML = node.imagefile ? `<img src="${node.imagefile}" alt="${node.label}">` : "";
-      }
+    // 🎛️ Populate user select
+    const select = document.getElementById('user-select');
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u;
+      select.appendChild(opt);
     });
 
-    // ✅ User select → highlight progress
-    sel.addEventListener("change", e => {
-      const user = e.target.value;
-      const allNodes = nodes.get();
-      allNodes.forEach(n => {
-        const completed = userProgress[user] && userProgress[user][n.id];
-        nodes.update({
-          id: n.id,
-          color: completed ? "#7ae582" : "#dddddd",
-          title: completed ? `${n.id}\nCompleted: ${completed}` : `${n.id}\nNot yet completed`
-        });
+    // 👤 Highlight user progress
+    select.addEventListener('change', () => {
+      const user = select.value;
+      const progress = userProgress[user] || {};
+      nodes.forEach(n => {
+        const completed = progress[n.id];
+        nodes.update({ id: n.id, color: completed ? n.color : "#cccccc" });
       });
     });
 
-    document.getElementById("spinner").style.display = "none";
-    document.getElementById("split-container").style.display = "flex";
+    // 🖱️ Node click info
+    network.on("click", params => {
+      if (params.nodes.length) {
+        const node = nodes.get(params.nodes[0]);
+        const info = document.getElementById('info-text');
+        info.innerHTML = `
+          <h3>${node.id}</h3>
+          <b>Category:</b> ${node.category}<br>
+          <b>Sign-off:</b> ${node.signoff}<br><br>
+          <div style="white-space:pre-line">${node.description}</div>
+        `;
+      }
+    });
   }
 
   main();
