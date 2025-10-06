@@ -121,7 +121,10 @@
       console.log("✅ Loaded definition.json:", definition);
 
       // ✅ Load user progress from Google Sheets
-      const csvURL = cors + encodeURIComponent("https://docs.google.com/spreadsheets/d/1bfFIBtzalMzUBCkfJ_5W3WrCMRDMSMPY-9cHBhxVVuM/export?format=csv");
+      const timestamp = new Date().getTime();
+      const csvURL = cors + encodeURIComponent(
+        "https://docs.google.com/spreadsheets/d/1bfFIBtzalMzUBCkfJ_5W3WrCMRDMSMPY-9cHBhxVVuM/export?format=csv&cachebust=" + timestamp
+      );
       const csvResp = await fetch(csvURL);
       const csvText = await csvResp.text();
       console.log("✅ Loaded user progress CSV:", csvText);
