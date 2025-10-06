@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d4" for="node" attr.name="usercompleted" attr.type="string"/>
+<key id="d3" for="node" attr.name="color" attr.type="string"/>
+<key id="d2" for="node" attr.name="category" attr.type="string"/>
+<key id="d1" for="node" attr.name="signoff" attr.type="string"/>
+<key id="d0" for="node" attr.name="description" attr.type="string"/>
+<graph edgedefault="directed"><node id="Beginner Vertical Caver">
+  <data key="d0">Can prusik and abseil, must understand the fundamentals of vertical safety (points of safety), give a bottom belay, and demonstrate clear vertical communication (on rope, abseiling, abseil when ready).</data>
+  <data key="d1">Vertical Caver</data>
+  <data key="d2">Caving</data>
+  <data key="d3">#f4e04d</data>
+  <data key="d4">{"alex": "2023-09-28", "jamie": "2023-10-07", "taylor": "2023-09-17", "pat": "2023-10-03"}</data>
+</node>
+<node id="Vertical Caver">
+  <data key="d0">Clear understanding and demonstration of changeovers, deviations, and rebelays, when and why they are used e.g., understanding of IRT vs alpine ropework. Demonstrated ability to teach basic caving concepts and skills including prusiking, abseiling, and fireman's belays.</data>
+  <data key="d1">Vertical Cave Leader</data>
+  <data key="d2">Caving</data>
+  <data key="d3">#f4e04d</data>
+  <data key="d4">{"alex": "2023-11-01", "taylor": "2023-10-19", "pat": "2023-11-02"}</data>
+</node>
+<node id="Canyoner">
+  <data key="d0">Understands and demonstrates entry level canyoning techniques e.g., rope/bag management, whistle communication, friction control, water hazards, sharp edges.</data>
+  <data key="d1">Canyon Leader</data>
+  <data key="d2">Canyoning</data>
+  <data key="d3">#4da6ff</data>
+  <data key="d4">{"alex": "2024-07-05", "jamie": "2023-10-25", "pat": "2024-05-16"}</data>
+</node>
+<node id="Canyon Leader">
+  <data key="d0">Must be able to rig a variety of styles and techniques including double strand, knot/biner blocks, releasables, and stone knots.</data>
+  <data key="d1">Canyon Guide</data>
+  <data key="d2">Canyoning</data>
+  <data key="d3">#4da6ff</data>
+  <data key="d4">{"alex": "2024-07-27", "jamie": "2023-11-28", "pat": "2024-06-24"}</data>
+</node>
+<node id="Canyon Guide">
+  <data key="d0">Demonstrates advanced canyoning skills, retrievables, ghosting, guided abseils, floating bags.</data>
+  <data key="d1">Canyon Guide</data>
+  <data key="d2">Canyoning</data>
+  <data key="d3">#4da6ff</data>
+  <data key="d4">{"jamie": "2023-12-25"}</data>
+</node>
+<node id="Beginner Rigger">
+  <data key="d0">Can rig simple vertical caves on bolts or naturals including simple deviations and rebelays.</data>
+  <data key="d1">Vertical Cave Leader</data>
+  <data key="d2">Rigging</data>
+  <data key="d3">#FFA500</data>
+  <data key="d4">{"alex": "2024-01-07", "taylor": "2023-11-28", "pat": "2024-01-16"}</data>
+</node>
+<node id="Knotcraft 1">
+  <data key="d0">Can tie and explain uses and limitations of knots such as F8 OTB, F9 OTB, overhand, tape knot, barrel knot.</data>
+  <data key="d1">Beginner Rigger</data>
+  <data key="d2">Rigging</data>
+  <data key="d3">#FFA500</data>
+  <data key="d4">{"alex": "2023-12-08", "taylor": "2023-11-05", "chris": "2023-10-11", "pat": "2023-12-09"}</data>
+</node>
+<node id="Knotcraft 2">
+  <data key="d0">Advanced understanding of knots including F8 rethread, butterfly, clove hitch, munter, and bowlines.</data>
+  <data key="d1">Vertical Cave Leader</data>
+  <data key="d2">Rigging</data>
+  <data key="d3">#FFA500</data>
+  <data key="d4">{"alex": "2024-01-27", "taylor": "2023-12-27", "pat": "2024-02-15"}</data>
+</node>
+<node id="Rescue 1">
+  <data key="d0">Understands mechanical advantage, executes pickoffs, counterbalances, and improvised rescues.</data>
+  <data key="d1">Rescue 2</data>
+  <data key="d2">Rescue</data>
+  <data key="d3">#ff6f69</data>
+  <data key="d4">{"alex": "2024-03-01", "taylor": "2024-02-05", "pat": "2024-03-26"}</data>
+</node>
+<node id="Vertical Cave Leader">
+  <data key="d0">Models safe leadership in vertical caving including planning, teaching, and navigation.</data>
+  <data key="d1">Caving Guide</data>
+  <data key="d2">Caving</data>
+  <data key="d3">#f4e04d</data>
+  <data key="d4">{"alex": "2024-04-09", "pat": "2024-04-17"}</data>
+</node>
+<node id="Rescue 2">
+  <data key="d0">Advanced rescue knowledge including stretcher and high-efficiency hauls.</data>
+  <data key="d1">Caving Guide</data>
+  <data key="d2">Rescue</data>
+  <data key="d3">#ff6f69</data>
+  <data key="d4">{"alex": "2024-05-01", "taylor": "2024-03-06"}</data>
+</node>
+<node id="Caving Guide">
+  <data key="d0">AKA Queen of The Underworld, Goblin King, Mud Monarch, Ruler of the Rope, Prime Grimister. This signoff doesn't mean you have nothing more to learn, but that you've developed the skills, knowledge, and experience to teach any caving skills that NUCC engages in.</data>
+  <data key="d1">Caving Guide</data>
+  <data key="d2">Caving</data>
+  <data key="d3">#f4e04d</data>
+  <data key="d4">{"alex": "2024-09-11"}</data>
+</node>
+<node id="Surveyor">
+  <data key="d0">Inducted and demonstrated capacity to perform various cave survey roles (book, laser, point, sketch).</data>
+  <data key="d1">Surveyor</data>
+  <data key="d2">Skills</data>
+  <data key="d3">#b2f7ef</data>
+  <data key="d4">{"alex": "2024-06-03"}</data>
+</node>
+<node id="Bolter">
+  <data key="d0">Solid theoretical understanding of anchor placement, bolting hardware and techniques.</data>
+  <data key="d1">Caving Guide / Canyon Guide</data>
+  <data key="d2">Skills</data>
+  <data key="d3">#b2f7ef</data>
+  <data key="d4">{"alex": "2024-08-20", "pat": "2024-07-23"}</data>
+</node>
+<node id="Horizontal Cave Leader">
+  <data key="d0">Although this signoff has only one prereq, you must model a set of leadership behaviours desirable by the club to safely and effectively lead people of all skill levels in horizontal caves.</data>
+  <data key="d1">Caving Guide</data>
+  <data key="d2">Caving</data>
+  <data key="d3">#f4e04d</data>
+  <data key="d4">{"chris": "2023-10-31"}</data>
+</node>
+<edge source="Beginner Vertical Caver" target="Vertical Caver"/>
+<edge source="Beginner Vertical Caver" target="Canyoner"/>
+<edge source="Vertical Caver" target="Beginner Rigger"/>
+<edge source="Canyoner" target="Canyon Leader"/>
+<edge source="Canyon Leader" target="Canyon Guide"/>
+<edge source="Canyon Leader" target="Bolter"/>
+<edge source="Beginner Rigger" target="Knotcraft 2"/>
+<edge source="Beginner Rigger" target="Rescue 1"/>
+<edge source="Knotcraft 1" target="Beginner Rigger"/>
+<edge source="Knotcraft 1" target="Horizontal Cave Leader"/>
+<edge source="Knotcraft 2" target="Rescue 1"/>
+<edge source="Rescue 1" target="Vertical Cave Leader"/>
+<edge source="Rescue 1" target="Rescue 2"/>
+<edge source="Vertical Cave Leader" target="Caving Guide"/>
+<edge source="Vertical Cave Leader" target="Bolter"/>
+<edge source="Rescue 2" target="Caving Guide"/>
+<edge source="Surveyor" target="Caving Guide"/>
+<edge source="Bolter" target="Caving Guide"/>
+</graph></graphml>

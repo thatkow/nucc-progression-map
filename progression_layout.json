@@ -1,0 +1,62 @@
+{
+  "Beginner Vertical Caver": {
+    "x": 165,
+    "y": 448
+  },
+  "Vertical Caver": {
+    "x": 164,
+    "y": 372
+  },
+  "Canyoner": {
+    "x": 18,
+    "y": 370
+  },
+  "Canyon Leader": {
+    "x": 19,
+    "y": 136
+  },
+  "Canyon Guide": {
+    "x": 19,
+    "y": -4
+  },
+  "Beginner Rigger": {
+    "x": 278,
+    "y": 295
+  },
+  "Knotcraft 1": {
+    "x": 279,
+    "y": 494
+  },
+  "Knotcraft 2": {
+    "x": 277,
+    "y": 229
+  },
+  "Rescue 1": {
+    "x": 378,
+    "y": 190
+  },
+  "Vertical Cave Leader": {
+    "x": 165,
+    "y": 136
+  },
+  "Rescue 2": {
+    "x": 379,
+    "y": 55
+  },
+  "Caving Guide": {
+    "x": 163,
+    "y": -8
+  },
+  "Surveyor": {
+    "x": 213,
+    "y": 56
+  },
+  "Bolter": {
+    "x": 95,
+    "y": 56
+  },
+  "Horizontal Cave Leader": {
+    "x": 394,
+    "y": 448
+  }
+}

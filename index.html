@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NUCC Progression Map</title>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/standalone/umd/vis-network.min.js"></script>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif;
+    }
+    #split-container {
+      display: flex; height: 100%; width: 100%;
+    }
+    #graph-div {
+      flex: 2; border-right: 1px solid #ccc;
+    }
+    #info-container {
+      flex: 1; display: flex; flex-direction: column; height: 100%;
+    }
+    #info-panel {
+      flex: 2; padding: 15px; overflow-y: auto; background-color: #f9f9f9;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    #info-text {
+      flex: 1 1 auto; overflow-y: auto;
+    }
+    #image-wrapper {
+      flex: 0 0 auto; display: flex; justify-content: center; align-items: center; height: 50vh;
+    }
+    img.preview {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+      border: 1px solid #bbb;
+      background-color: #fff;
+    }
+    #user-panel {
+      flex: 0 0 140px; padding: 15px; border-top: 1px solid #ccc; background-color: #fff;
+    }
+    select {
+      width: 100%; font-size: 14px; padding: 6px; margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+<div id="split-container">
+  <div id="graph-div"></div>
+  <div id="info-container">
+    <div id="info-panel">
+      <div id="info-text">
+        <h3>Select a node</h3>
+        <p>Click a node to see details and image.</p>
+      </div>
+      <div id="image-wrapper"></div>
+    </div>
+    <div id="user-panel">
+      <b>Show progress for:</b><br>
+      <select id="user-select">
+        <option value="">— Select user —</option>
+        <option value="Alice">Alice</option>
+        <option value="Ben">Ben</option>
+        <option value="Charlie">Charlie</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Example static data (replace with your own) ---
+  const nodesData = [
+    { id: 1, label: "Beginner Vertical Caver", color: "#f4e04d", category: "Caving", signoff: "Vertical Caver", description: "Can prusik and abseil, understands vertical safety.", usercompleted: {"Alice":"2025-03-01"} },
+    { id: 2, label: "Vertical Caver", color: "#f4e04d", category: "Caving", signoff: "VCL", description: "Understands changeovers, deviations, and rebelays.", usercompleted: {"Alice":"2025-04-01", "Ben":"2025-06-10"} },
+    { id: 3, label: "Canyoner", color: "#4da6ff", category: "Canyoning", signoff: "Canyon Leader", description: "Understands rope/bag management and friction control.", usercompleted: {"Ben":"2025-07-20"} },
+    { id: 4, label: "Canyon Leader", color: "#4da6ff", category: "Canyoning", signoff: "Canyon Guide", description: "Can rig and plan complex canyons.", usercompleted: {"Ben":"2025-08-12"} },
+    { id: 5, label: "Caving Guide", color: "#f4e04d", category: "Caving", signoff: "Caving Guide", description: "Leads trips and teaches vertical caving.", usercompleted: {} }
+  ];
+
+  const edgesData = [
+    { from: 1, to: 2 },
+    { from: 1, to: 3 },
+    { from: 3, to: 4 },
+    { from: 2, to: 5 },
+    { from: 4, to: 5 }
+  ];
+
+  // --- Setup Network ---
+  const container = document.getElementById("graph-div");
+  const data = { nodes: new vis.DataSet(nodesData), edges: new vis.DataSet(edgesData) };
+  const options = {
+    physics: false,
+    interaction: { dragNodes: false, dragView: false, zoomView: false },
+    edges: { smooth: false, arrows: { to: { enabled: true, scaleFactor: 0.8 } }, color: "#333" },
+    nodes: { shape: "box", borderWidth: 1 }
+  };
+  const network = new vis.Network(container, data, options);
+
+  // --- Original colors for reset ---
+  const originalColors = {};
+  data.nodes.get().forEach(n => { originalColors[n.id] = n.color; });
+
+  // --- Handle node click ---
+  network.on("click", function (params) {
+    const textPanel = document.getElementById("info-text");
+    const imagePanel = document.getElementById("image-wrapper");
+
+    if (params.nodes.length > 0) {
+      const nodeId = params.nodes[0];
+      const node = data.nodes.get(nodeId);
+      const uc = node.usercompleted || {};
+      const ucText = Object.entries(uc).map(([u, d]) => `${u}: ${d}`).join("<br>") || "—";
+
+      // image path - looks in same folder or /images/
+      const safeName = node.label.replace(/[\\/:"*?<>|]/g, "_");
+      const imgPath = `images/${safeName}.png`;
+
+      // Try load the image (check if exists)
+      fetch(imgPath, { method: 'HEAD' })
+        .then(r => {
+          if (r.ok) {
+            imagePanel.innerHTML = `<img src="${imgPath}" class="preview" alt="${node.label} image">`;
+          } else {
+            imagePanel.innerHTML = "";
+          }
+        })
+        .catch(() => { imagePanel.innerHTML = ""; });
+
+      textPanel.innerHTML = `
+        <h3>${node.label}</h3>
+        <b>Category:</b> ${node.category}<br>
+        <b>Sign-off:</b> ${node.signoff}<br><br>
+        <div style="white-space:pre-wrap;">${node.description}</div><br>
+        <b>Completed:</b><br>${ucText}
+      `;
+    }
+  });
+
+  // --- User progress coloring ---
+  document.getElementById("user-select").addEventListener("change", function () {
+    const user = this.value;
+    data.nodes.forEach(n => {
+      const uc = n.usercompleted || {};
+      const origColor = originalColors[n.id] || "#ccc";
+      if (!user) {
+        data.nodes.update({ id: n.id, color: origColor, title: n.label });
+      } else if (uc[user]) {
+        data.nodes.update({ id: n.id, color: origColor, title: `${n.label}\nCompleted: ${uc[user]}` });
+      } else {
+        data.nodes.update({ id: n.id, color: "#ddd", title: `${n.label}\nNot yet completed` });
+      }
+    });
+  });
+</script>
+</body>
+</html>
