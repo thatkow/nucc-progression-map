@@ -6,16 +6,122 @@
   <script src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
   <link href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css" rel="stylesheet" />
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
-    #split-container { display: flex; flex-direction: row; height: 100%; width: 100%; }
-    #graph-div { flex: 2; border-right: 1px solid #ccc; }
-    #info-container { flex: 1; display: flex; flex-direction: column; height: 100%; }
-    #info-panel { flex: 1; padding: 10px; overflow-y: auto; background-color: #fafafa; }
-    #image-wrapper { text-align: center; margin-top: 10px; }
-    img.preview { max-width: 100%; border-radius: 4px; }
-    #user-panel { border-top: 1px solid #ccc; padding: 10px; background-color: #fff; }
-    select { width: 100%; padding: 5px; }
-  </style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+/* --- Base container --- */
+#split-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+/* --- Graph / Info Panels --- */
+#graph-div {
+  flex: 2;
+  border-right: 1px solid #ccc;
+}
+#info-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+#info-panel {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+#info-text {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+#image-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40vh;
+}
+img.preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  background-color: #fff;
+}
+
+/* --- User panel --- */
+#user-panel {
+  flex: 0 0 60px;
+  padding: 8px;
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 14px;
+}
+#user-select {
+  width: 100%;
+  font-size: 14px;
+  padding: 4px;
+  margin-top: 4px;
+}
+
+/* -------- Responsive -------- */
+
+/* Portrait: stack vertically */
+@media (orientation: portrait) {
+  #split-container {
+    flex-direction: column;
+  }
+  #graph-div {
+    flex: 0 0 33%;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+  #info-container {
+    flex: 1;
+  }
+  #image-wrapper {
+    height: 25vh;
+  }
+  #user-panel {
+    flex: 0 0 50px;
+  }
+}
+
+/* Landscape: side-by-side */
+@media (orientation: landscape) {
+  #split-container {
+    flex-direction: row;
+  }
+  #graph-div {
+    flex: 2;
+    border-right: 1px solid #ccc;
+    border-bottom: none;
+  }
+  #info-container {
+    flex: 1;
+  }
+  #image-wrapper {
+    height: 40vh;
+  }
+  #user-panel {
+    flex: 0 0 50px;
+  }
+}
+</style>
+
 </head>
 <body>
   <div id="split-container">
