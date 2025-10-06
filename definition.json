@@ -22,7 +22,7 @@
       "id": "Canyoner",
       "category": "Canyoning",
       "color": "#4da6ff",
-      "description": "Understands and demonstrates entry level canyoning techniques e.g., rope/bag management, whistle communication, friction control, water hazards, sharp edges.",
+      "description": "Understands and demonstrates entry level canyoning techniques e.g., rope/bag management, whistle communication, friction control, water hazards, sharp edges, picking a line, how to clean common anchor setups like F8 releasables, throw and gos (double strand), and knot/biner blocks.",
       "signoff": "Canyon Leader",
       "x": 18,
       "y": 370
@@ -31,7 +31,7 @@
       "id": "Canyon Leader",
       "category": "Canyoning",
       "color": "#4da6ff",
-      "description": "Must be able to rig a variety of styles and techniques including double strand, knot/biner blocks, releasables, and stone knots.",
+      "description": "Similar to VCL, this signoff requires not only technical skills but also leadership, planning, and experience. Must be able to rig a variety of styles and techniques including double strand, knot/biner blocks, releasables, stone knots, joined ropes (EDK), rope bleeding, access lines, and conceptually understand when and where certain setups may be ideal. Has a solid understanding of canyon hazards and how to mitigate them for the group including but not limited to hypothermia, hydraulic hazards, rope abrasion, jumps, scrambling, anchor assessments and replacement. Highly regarded to have first aid quals.",
       "signoff": "Canyon Guide",
       "x": 19,
       "y": 136
@@ -40,7 +40,7 @@
       "id": "Canyon Guide",
       "category": "Canyoning",
       "color": "#4da6ff",
-      "description": "Demonstrates advanced canyoning skills, retrievables, ghosting, guided abseils, floating bags.",
+      "description": "Count of Canyons, Sovereign of the Slots, Duchess of the Drops, Wuler of the Waterfalls.\nDemonstrates advanced canyoning skills and techniques, e.g., retrievables, guided abseils, ghosting, floating bags. Experienced in highly vertical and aquatic canyons, familiar and efficient with canyon rescue techniques. This signoff doesn't mean you have nothing more to learn, but that you've developed the skills, knowledge, and experience to teach any canyoning skills that NUCC engages in.",
       "signoff": "Canyon Guide",
       "x": 19,
       "y": -4
@@ -49,7 +49,7 @@
       "id": "Beginner Rigger",
       "category": "Rigging",
       "color": "#FFA500",
-      "description": "Can rig simple vertical caves on bolts or naturals including simple deviations and rebelays.",
+      "description": "Can rig a simple vertical cave on bolts or high quality naturals including simple deviations, rebelays and belayed ladders, using knots covered in Knotcraft 1. Understands principles of backups, shockloading, equalisation, rope wear, edge protection. Also needs to demonstrate a basic understanding of cave navigation, gear planning, rope management.",
       "signoff": "Vertical Cave Leader",
       "x": 278,
       "y": 295
@@ -58,7 +58,7 @@
       "id": "Knotcraft 1",
       "category": "Rigging",
       "color": "#FFA500",
-      "description": "Can tie and explain uses and limitations of knots such as F8 OTB, F9 OTB, overhand, tape knot, barrel knot.",
+      "description": "Can tie and explain uses and some limitations of the following knots: F8 OTB, F9 OTB, overhand OTB, tape knot, barrel knot. Introduced to different equipment and materials e.g., nylon and polyester rope and tape, locking and snapgate krabs.",
       "signoff": "Beginner Rigger",
       "x": 279,
       "y": 494
@@ -67,7 +67,7 @@
       "id": "Knotcraft 2",
       "category": "Rigging",
       "color": "#FFA500",
-      "description": "Advanced understanding of knots including F8 rethread, butterfly, clove hitch, munter, and bowlines.",
+      "description": "Demonstrates a more advanced understanding of the strengths and limitations of the basic knots covered in Knotcraft 1 as well as the following: F8 rethread, alpine butterfly, girth hitch, clove hitch, munter hitch, simple bowline and backups, tensionless hitch, BFK, BOTB, fusion knot, standard prusik. Additionally, familiarity and understanding of materials such as HMPE (Dyneema) and other modern fibres, and metal grades (e.g., 316 SS vs 304 SS vs zinc plated).",
       "signoff": "Vertical Cave Leader",
       "x": 277,
       "y": 229
@@ -76,7 +76,7 @@
       "id": "Rescue 1",
       "category": "Rescue",
       "color": "#ff6f69",
-      "description": "Understands mechanical advantage, executes pickoffs, counterbalances, and improvised rescues.",
+      "description": "Practical understanding of forces applied in caving, mechanical advantage, mechanical efficiency. Demonstrated ability to execute / rig and manage standard intra-party rescue or safety techniques (e.g., pickoff, counterbalance haul, 3:1 z-haul, improvised belay). Required to demonstrate some lateral thinking / problem solving ability to resolve situations out of the ordinary e.g., improvising in a situation without the ideal gear.",
       "signoff": "Rescue 2",
       "x": 378,
       "y": 190
@@ -85,7 +85,7 @@
       "id": "Vertical Cave Leader",
       "category": "Caving",
       "color": "#f4e04d",
-      "description": "Models safe leadership in vertical caving including planning, teaching, and navigation.",
+      "description": "This level is more than an accumulation of skills, you must also model a set of leadership behaviours desirable by the club to safely and effectively lead people of all skill levels in vertical caves. This includes broader trip management, logistics (gear lists, carpooling, etc), navigation (on approach and in-cave), teaching, people skills (patience), and ability to effectively manage complex or stressful situations if they arise. Highly regarded to have first aid quals.",
       "signoff": "Caving Guide",
       "x": 165,
       "y": 136
@@ -94,7 +94,7 @@
       "id": "Rescue 2",
       "category": "Rescue",
       "color": "#ff6f69",
-      "description": "Advanced rescue knowledge including stretcher and high-efficiency hauls.",
+      "description": "Note: I don't think we currently do enough training to sign off Rescue 2, I hope that we can start running specific rescue sessions about once or twice a semester to build these skills.\nAbility to conduct others and independently participate in group rescues including stretcher rescues, complex hauls, guided ascents / descents, high efficiency/advantage hauls (9:1), set up and maintain clear and efficient communication within rescue team. Advanced understanding of forces, gear ratings (WLL, MBS) in rescue scenarios. Highly regarded to have first aid quals and bolting experience.",
       "signoff": "Caving Guide",
       "x": 379,
       "y": 55
@@ -103,7 +103,7 @@
       "id": "Caving Guide",
       "category": "Caving",
       "color": "#f4e04d",
-      "description": "AKA Queen of The Underworld, Goblin King, Mud Monarch, Ruler of the Rope, Prime Grimister. This signoff doesn't mean you have nothing more to learn, but that you've developed the skills, knowledge, and experience to teach any caving skills that NUCC engages in.",
+      "description": "AKA Queen of The Underworld, Goblin King, Mud Monarch, Ruler of the Rope, Prime Grimister.\nThis signoff doesn't mean you have nothing more to learn, but that you've developed the skills, knowledge, and experience to teach any caving skills that NUCC engages in.",
       "signoff": "Caving Guide",
       "x": 163,
       "y": -8
@@ -121,7 +121,7 @@
       "id": "Bolter",
       "category": "Skills",
       "color": "#b2f7ef",
-      "description": "Solid theoretical understanding of anchor placement, bolting hardware and techniques.",
+      "description": "Solid theoretical understanding of anchor placement considerations, bolting hardware and techniques, ethical considerations, and forces. Practical knowledge of bolting methods, including at least two of the following: glueins, expansion bolts, concrete screws, removables (e.g., Coeur Pulse).",
       "signoff": "Caving Guide / Canyon Guide",
       "x": 95,
       "y": 56
@@ -130,10 +130,18 @@
       "id": "Horizontal Cave Leader",
       "category": "Caving",
       "color": "#f4e04d",
-      "description": "Although this signoff has only one prereq, you must model a set of leadership behaviours desirable by the club to safely and effectively lead people of all skill levels in horizontal caves.",
+      "description": "Although this signoff has only one prereq, you must model a set of leadership behaviours desirable by the club to safely and effectively lead people of all skill levels in horizontal caves. This includes broader trip management, logistics (gear lists, carpooling, etc), navigation (on approach and in-cave), teaching, people skills (patience), and ability to effectively manage complex or stressful situations if they arise. Highly regarded to have first aid quals.",
       "signoff": "Caving Guide",
       "x": 394,
       "y": 448
+    },{
+      "id": "NUCC Champion",
+      "category": "Skills",
+      "color": "#9b59b6",
+      "description": "Represents the pinnacle of NUCC proficiency across all disciplines. Demonstrates excellence in both caving and canyoning leadership, advanced technical competence, and mentorship of new members. Embodies the club’s spirit of safety, adventure, and inclusivity.",
+      "signoff": "Executive Committee",
+       "x": 91,
+      "y": -80
     }
   ],
   "edges": [
@@ -208,6 +216,13 @@
     {
       "from": "Bolter",
       "to": "Caving Guide"
+    },  {
+      "from": "Caving Guide",
+      "to": "NUCC Champion"
+    },
+    {
+      "from": "Canyon Guide",
+      "to": "NUCC Champion"
     }
   ]
 }
