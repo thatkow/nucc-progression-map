@@ -4,191 +4,63 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NUCC Progression Graph</title>
-
-  <!-- ✅ vis-network CSS/JS from jsDelivr (unpkg can fail MIME check) -->
   <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/styles/vis-network.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/dist/vis-network.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
-/* --- Base layout (desktop & landscape) --- */
-#split-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
-
-#graph-div {
-  flex: 2;
-  border-right: 1px solid #ccc;
-  overflow: hidden;
-}
-
-#info-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-#info-panel {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  background-color: #f9f9f9;
-}
-
-#image-wrapper {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50vh;
-}
-
-img.preview {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border: 1px solid #bbb;
-  border-radius: 4px;
-  background-color: #fff;
-}
-
-#user-panel {
-  flex: 0 0 40px;
-  padding: 4px 10px;
-  border-top: 1px solid #ccc;
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-#user-panel select {
-  flex: 1;
-  margin-left: 8px;
-  font-size: 13px;
-  padding: 3px;
-}
-
-/* --- Mobile / portrait mode (≤768px) --- */
-@media (max-width: 768px) and (orientation: portrait) {
-  #split-container {
-    flex-direction: column;
+  #split-container { display:flex;height:100vh;width:100%; }
+  #graph-div { flex:2;border-right:1px solid #ccc;overflow:hidden; }
+  #info-container { flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden; }
+  #info-panel { flex:1;overflow-y:auto;padding:15px;background-color:#f9f9f9; }
+  #image-wrapper { flex:0 0 auto;display:flex;justify-content:center;align-items:center;height:50vh; }
+  img.preview { max-width:100%;max-height:100%;object-fit:contain;border:1px solid #bbb;border-radius:4px;background-color:#fff; }
+  #user-panel { flex:0 0 40px;padding:4px 10px;border-top:1px solid #ccc;background-color:#fff;display:flex;align-items:center;justify-content:space-between; }
+  #user-panel select { flex:1;margin-left:8px;font-size:13px;padding:3px; }
+  @media (max-width:768px) and (orientation:portrait) {
+    #split-container { flex-direction:column; }
+    #graph-div { flex:0 0 33vh;border-right:none;border-bottom:1px solid #ccc; }
+    #info-container { flex:1;height:67vh;overflow:hidden; }
   }
-
-  #graph-div {
-    flex: 0 0 33vh;  /* top third */
-    border-right: none;
-    border-bottom: 1px solid #ccc;
-  }
-
-  #info-container {
-    flex: 1;
-    height: 67vh;
-    overflow: hidden;
-  }
-
-  #info-panel {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  #image-wrapper {
-    height: 25vh;
-    max-height: 40%;
-  }
-
-  #user-panel {
-    flex: 0 0 40px;
-    height: 40px;
-  }
-}
-
-/* --- Landscape tablets/phones (≤768px width, landscape) --- */
-@media (max-width: 768px) and (orientation: landscape) {
-  #split-container {
-    flex-direction: row;
-  }
-
-  #graph-div {
-    flex: 1.2;
-  }
-
-  #info-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  #info-panel {
-    flex: 1 1 auto;
-    overflow-y: auto;
-  }
-
-  #user-panel {
-    flex: 0 0 40px;
-    height: 40px;
-  }
-}
-
-     </style>
+  </style>
 </head>
 
 <body>
   <div id="split-container">
-    <div id="graph-div">
-      <div id="spinner">Loading data...</div>
-    </div>
+    <div id="graph-div"><div id="spinner">Loading data...</div></div>
     <div id="info-container">
-      <div id="info-panel">
-        <div id="info-text">
-          <h3>Select a skill</h3>
-          <p>Click a skill to load details!</p>
-        </div>
-        <div id="image-wrapper"></div>
-      </div>
-      <div id="user-panel">
-        <select id="user-select">
-          <option value="">— Select user —</option>
-        </select>
-      </div>
+      <div id="info-panel"><div id="info-text"><h3>Select a skill</h3><p>Click a skill to load details!</p></div><div id="image-wrapper"></div></div>
+      <div id="user-panel"><select id="user-select"><option value="">— Select user —</option></select></div>
     </div>
   </div>
 
-  <script>
-  const base = "https://thatkow.github.io/nucc-progression-map/";
-const cachebust = "?v=" + new Date().getTime();
-
+<script>
 async function main() {
-  // ✅ Load definition.csv (with cache-bust)
+  const base = "https://thatkow.github.io/nucc-progression-map/";
+  const cachebust = "?v=" + new Date().getTime();
+
+  // ✅ Load and parse definition.csv (quoted-safe)
   const defURL = base + "definition.csv" + cachebust;
   const defResp = await fetch(defURL);
   const defText = await defResp.text();
-  console.log("✅ Loaded definition.csv:", defText);
+  const defParsed = Papa.parse(defText, { header: true, skipEmptyLines: true });
+  const definition = defParsed.data;
+  console.log("✅ Parsed definition rows:", definition);
 
-  // 🔄 Parse CSV into structured array
-  const defRows = defText.trim().split(/\r?\n/).map(r => r.split(","));
-  const defHeaders = defRows.shift();
-  const definition = defRows.map(row =>
-    Object.fromEntries(row.map((val, i) => [defHeaders[i], val]))
-  );
-  console.log("✅ Parsed definition data:", definition);
+  // ✅ Load and parse user_progress.csv
+  const csvURL = base + "user_progress.csv" + cachebust;
+  const csvResp = await fetch(csvURL);
+  const csvText = await csvResp.text();
+  const userParsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+  const userRows = userParsed.data;
+  console.log("✅ Parsed user progress rows:", userRows);
 
-  // ✅ Build nodes and edges directly
+  // Build nodes/edges
   const nodes = new vis.DataSet();
   const edges = new vis.DataSet();
-  const gridCols = 4, spacingX = 300, spacingY = 180;
-
-  for (let i = 0; i < definition.length; i++) {
-    const node = definition[i];
-    const id = node.id || node["Name"];
-    const x = parseFloat(node.x || 0);
-    const y = parseFloat(node.y || 0);
+  definition.forEach(node => {
+    const id = node.Name || node.id;
     const imgPath = "images/" + encodeURIComponent(id) + ".png";
-
     nodes.add({
       id,
       label: id,
@@ -199,49 +71,35 @@ async function main() {
       shape: "box",
       color: node.color || "#cccccc",
       fixed: { x: true, y: true },
-      x, y,
+      x: parseFloat(node.x || 0),
+      y: parseFloat(node.y || 0),
       imagefile: imgPath
     });
-
-    // if "prereq" or "from" fields exist
     if (node.prereq) {
       node.prereq.split(";").forEach(pr => {
         if (pr.trim()) edges.add({ from: pr.trim(), to: id, arrows: "to" });
       });
     }
-  }
-
-  // ✅ Load user progress CSV
-  const csvURL = base + "user_progress.csv" + cachebust;
-  const csvResp = await fetch(csvURL);
-  const csvText = await csvResp.text();
-  console.log("✅ Loaded user progress CSV:", csvText);
-
-  // parse user progress
-  const rows = csvText.trim().split("\n").map(r => r.split(","));
-  const headers = rows[0].slice(1);
-  const userProgress = {};
-  for (let i = 1; i < rows.length; i++) {
-    const [user, ...dates] = rows[i];
-    userProgress[user] = {};
-    headers.forEach((node, j) => {
-      if (dates[j] && dates[j].trim() !== "")
-        userProgress[user][node.trim()] = dates[j].trim();
-    });
-  }
-  console.log("✅ Parsed user progress:", userProgress);
-
-  document.getElementById("spinner").style.display = "none";
-
-  const container = document.getElementById("graph-div");
-  const network = new vis.Network(container, { nodes, edges }, {
-    physics: { enabled: false },
-    interaction: { dragNodes: false, dragView: false, zoomView: true },
-    edges: { smooth: false, arrows: { to: { enabled: true, scaleFactor: 0.8 } } },
-    nodes: { borderWidth: 1 }
   });
 
-  // ✅ user select logic
+  // Build user progress object
+  const userProgress = {};
+  userRows.forEach(row => {
+    const user = row.user;
+    userProgress[user] = {};
+    Object.entries(row).forEach(([skill, date]) => {
+      if (skill !== "user" && date && date.trim() !== "")
+        userProgress[user][skill] = date;
+    });
+  });
+
+  document.getElementById("spinner").style.display = "none";
+  const network = new vis.Network(document.getElementById("graph-div"), { nodes, edges }, {
+    physics: { enabled: false },
+    interaction: { dragNodes: false, zoomView: true },
+    edges: { smooth: false, arrows: { to: { enabled: true } } }
+  });
+
   const select = document.getElementById("user-select");
   Object.keys(userProgress).forEach(u => {
     const opt = document.createElement("option");
@@ -250,19 +108,17 @@ async function main() {
 
   const originalColors = {};
   nodes.get().forEach(n => originalColors[n.id] = n.color);
-
   select.addEventListener("change", function() {
     const user = this.value;
     nodes.get().forEach(n => {
       const origColor = originalColors[n.id];
       if (!user) nodes.update({ id: n.id, color: origColor });
-      else if (userProgress[user] && userProgress[user][n.id])
+      else if (userProgress[user]?.[n.id])
         nodes.update({ id: n.id, color: origColor });
       else nodes.update({ id: n.id, color: "#dddddd" });
     });
   });
 
-  // ✅ show node info
   network.on("click", function (params) {
     if (params.nodes.length > 0) {
       const node = nodes.get(params.nodes[0]);
@@ -271,15 +127,12 @@ async function main() {
         <h3>${node.label}</h3>
         <b>Category:</b> ${node.category}<br>
         <b>Sign-off:</b> ${node.signoff}<br><br>
-        <div style="white-space:pre-wrap;">${node.description}</div>
-      `;
+        <div style="white-space:pre-wrap;">${node.description}</div>`;
       document.getElementById("image-wrapper").innerHTML = imgTag;
     }
   });
 }
-
 document.addEventListener("DOMContentLoaded", main);
-
-  </script>
+</script>
 </body>
 </html>
