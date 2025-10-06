@@ -39,7 +39,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 50vh;
+    height: 40vh;
   }
 
   img.preview {
@@ -68,22 +68,21 @@
     padding: 3px;
   }
 
-  /* --- Mobile / portrait mode (≤768px) --- */
+  /* --- Mobile / portrait mode --- */
   @media (max-width: 768px) and (orientation: portrait) {
     #split-container {
       flex-direction: column;
     }
 
     #graph-div {
-      flex: 0 0 33vh;  /* top third */
+      flex: 0 0 35vh;
       border-right: none;
       border-bottom: 1px solid #ccc;
     }
 
     #info-container {
       flex: 1;
-      height: 67vh;
-      overflow: hidden;
+      height: 65vh;
     }
 
     #info-panel {
@@ -97,41 +96,38 @@
     }
 
     #user-panel {
-      flex: 0 0 40px;
-      height: 40px;
+      flex: 0 0 35px;
+      height: 35px;
     }
   }
 
-  /* --- Landscape tablets/phones (≤768px width, landscape) --- */
+  /* --- Landscape tablets/phones --- */
   @media (max-width: 768px) and (orientation: landscape) {
     #split-container {
       flex-direction: row;
     }
 
     #graph-div {
-      flex: 1.2;
+      flex: 1.3;
     }
 
     #info-container {
       flex: 1;
-      display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     #info-panel {
-      flex: 1 1 auto;
+      flex: 1;
       overflow-y: auto;
     }
 
     #user-panel {
-      flex: 0 0 40px;
-      height: 40px;
+      flex: 0 0 35px;
+      height: 35px;
     }
   }
 
-</style>
-
+  </style>
 </head>
 <body>
   <div id="split-container">
@@ -143,7 +139,7 @@
         <div id="image-wrapper"></div>
       </div>
       <div id="user-panel">
-        <b>Show progress for:</b><br>
+        <b>Show progress for:</b>
         <select id="user-select"><option value="">— Select user —</option></select>
       </div>
     </div>
@@ -160,7 +156,6 @@
     const defText = await defResp.text();
     console.log("✅ Loaded definition.csv:", defText);
 
-    // Proper CSV parsing with quoted fields
     const rows = defText.trim().split(/\r?\n/).map(r =>
       r.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(v => v.replace(/^"|"$/g, "")) || []
     );
@@ -180,7 +175,6 @@
     const userProgress = Object.fromEntries(
       csvRows.map(r => [r[0], Object.fromEntries(csvHeaders.slice(1).map((c, i) => [c, r[i + 1]]))])
     );
-    console.log("✅ Parsed user progress:", userProgress);
 
     const container = document.getElementById('graph-div');
 
@@ -209,7 +203,6 @@
       }
     });
     const edges = new vis.DataSet(edgesArr);
-    console.log("✅ Built edges:", edgesArr);
 
     const data = { nodes, edges };
 
@@ -228,11 +221,11 @@
     const network = new vis.Network(container, data, options);
     network.fit({ animation: false });
 
-    // 🟩 Preserve original colors
+    // 🎨 Preserve original colors
     const originalColors = {};
     nodes.forEach(n => originalColors[n.id] = n.color);
 
-    // 🎛️ Populate user select
+    // 👥 Populate user dropdown
     const select = document.getElementById('user-select');
     users.forEach(u => {
       const opt = document.createElement('option');
@@ -241,15 +234,11 @@
       select.appendChild(opt);
     });
 
-    // 👤 Highlight user progress (keep colors same, grey others)
+    // 👤 User progress toggle
     select.addEventListener('change', () => {
       const user = select.value;
       const progress = userProgress[user] || {};
-
-      // Reset all nodes
       nodes.forEach(n => nodes.update({ id: n.id, color: originalColors[n.id] }));
-
-      // Grey out not completed
       if (user) {
         nodes.forEach(n => {
           const completed = progress[n.id];
@@ -258,7 +247,7 @@
       }
     });
 
-    // 🖱️ Node click info + auto-load image from /images/
+    // 🖱️ Node click info & image
     network.on("click", params => {
       if (params.nodes.length) {
         const node = nodes.get(params.nodes[0]);
@@ -270,8 +259,6 @@
           <b>Sign-off:</b> ${node.signoff}<br><br>
           <div style="white-space:pre-line">${node.description}</div>
         `;
-
-        // Auto-detect image by node name
         const imgName = encodeURIComponent(node.id.replace(/\s+/g, " ")) + ".png";
         const imgURL = base + "images/" + imgName;
         const testImg = new Image();
@@ -288,7 +275,5 @@
 
   main();
   </script>
-
-
 </body>
 </html>
