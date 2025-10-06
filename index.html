@@ -1,174 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>NUCC Progression Map</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/standalone/umd/vis-network.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUCC Progression Graph</title>
+
+  <!-- ✅ vis-network CSS/JS from jsDelivr (unpkg can fail MIME check) -->
+  <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/styles/vis-network.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.6/dist/vis-network.min.js"></script>
+
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif;
-    }
-    #split-container {
-      display: flex; height: 100%; width: 100%;
-    }
-    #graph-div {
-      flex: 2; border-right: 1px solid #ccc;
-    }
-    #info-container {
-      flex: 1; display: flex; flex-direction: column; height: 100%;
-    }
-    #info-panel {
-      flex: 2; padding: 15px; overflow-y: auto; background-color: #f9f9f9;
-      display: flex; flex-direction: column; justify-content: space-between;
-    }
-    #info-text {
-      flex: 1 1 auto; overflow-y: auto;
-    }
-    #image-wrapper {
-      flex: 0 0 auto; display: flex; justify-content: center; align-items: center; height: 50vh;
-    }
-    img.preview {
-      max-height: 100%;
-      max-width: 100%;
-      object-fit: contain;
-      border-radius: 4px;
-      border: 1px solid #bbb;
-      background-color: #fff;
-    }
-    #user-panel {
-      flex: 0 0 140px; padding: 15px; border-top: 1px solid #ccc; background-color: #fff;
-    }
-    select {
-      width: 100%; font-size: 14px; padding: 6px; margin-top: 6px;
-    }
-  </style>
-</head>
-<body>
-<div id="split-container">
-  <div id="graph-div"></div>
-  <div id="info-container">
-    <div id="info-panel">
-      <div id="info-text">
-        <h3>Select a node</h3>
-        <p>Click a node to see details and image.</p>
-      </div>
-      <div id="image-wrapper"></div>
-    </div>
-    <div id="user-panel">
-      <b>Show progress for:</b><br>
-      <select id="user-select">
-        <option value="">— Select user —</option>
-        <option value="Alice">Alice</option>
-        <option value="Ben">Ben</option>
-        <option value="Charlie">Charlie</option>
-      </select>
-    </div>
-  </div>
-</div>
-
-<script>
-async function loadGraph() {
-  // Load GraphML
-  const graphText = await fetch("progression.graphml").then(r => r.text());
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(graphText, "application/xml");
-
-  const nodes = [];
-  const edges = [];
-  const userProgress = {
-    Alice: ["Beginner Vertical Caver", "Vertical Caver", "Beginner Rigger"],
-    Ben: ["Beginner Vertical Caver", "Canyoner", "Canyon Leader"],
-    Charlie: ["Beginner Vertical Caver", "Vertical Caver", "Rescue 1", "Vertical Cave Leader"]
-  };
-
-  // Parse layout JSON
-  const layout = await fetch("progression_layout.json").then(r => r.json());
-
-  // Parse nodes
-  xml.querySelectorAll("node").forEach((n, i) => {
-    const id = n.getAttribute("id");
-    const data = {};
-    n.querySelectorAll("data").forEach(d => {
-      data[d.getAttribute("key")] = d.textContent;
-    });
-
-    const pos = layout[id] || {x: 0, y: 0};
-    nodes.push({
-      id,
-      label: id,
-      x: pos.x,
-      y: -pos.y,
-      fixed: true,
-      color: data.color || "#cccccc",
-      category: data.category || "Other",
-      signoff: data.signoff || "",
-      description: data.description || ""
-    });
-  });
-
-  // Parse edges
-  xml.querySelectorAll("edge").forEach(e => {
-    edges.push({ from: e.getAttribute("source"), to: e.getAttribute("target") });
-  });
-
-  // Build network
-  const container = document.getElementById("graph-div");
-  const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
-  const options = {
-    physics: false,
-    interaction: { dragNodes: false, dragView: false, zoomView: false },
-    edges: { smooth: false, arrows: { to: { enabled: true, scaleFactor: 0.8 } }, color: "#333" },
-    nodes: { shape: "box", borderWidth: 1 }
-  };
-  const network = new vis.Network(container, data, options);
-
-  const infoText = document.getElementById("info-text");
-  const imageWrapper = document.getElementById("image-wrapper");
-
-  // On node click
-  network.on("click", function (params) {
-    if (params.nodes.length > 0) {
-      const id = params.nodes[0];
-      const node = data.nodes.get(id);
-      const safeName = node.label.replace(/[\\/:"*?<>|]/g, "_");
-      const imgPath = `images/${safeName}.png`;
-
-      fetch(imgPath, { method: "HEAD" })
-        .then(r => {
-          if (r.ok) {
-            imageWrapper.innerHTML = `<img src="${imgPath}" class="preview" alt="${node.label} image">`;
-          } else {
-            imageWrapper.innerHTML = "";
-          }
-        })
-        .catch(() => imageWrapper.innerHTML = "");
-
-      infoText.innerHTML = `
-        <h3>${node.label}</h3>
-        <b>Category:</b> ${node.category}<br>
-        <b>Sign-off:</b> ${node.signoff}<br><br>
-        <div style="white-space:pre-wrap;">${node.description}</div>
-      `;
-    }
-  });
-
-  // User select coloring
-  document.getElementById("user-select").addEventListener("change", function () {
-    const user = this.value;
-    data.nodes.forEach(n => {
-      if (!user) {
-        data.nodes.update({ id: n.id, color: n.color });
-      } else if (userProgress[user]?.includes(n.label)) {
-        data.nodes.update({ id: n.id, color: "#8f8" }); // green for completed
-      } else {
-        data.nodes.update({ id: n.id, color: "#ddd" });
-      }
-    });
-  });
+/* --- Base layout (desktop & landscape) --- */
+#split-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
 }
 
-loadGraph();
-</script>
+#graph-div {
+  flex: 2;
+  border-right: 1px solid #ccc;
+  overflow: hidden;
+}
+
+#info-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+#info-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+#image-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+img.preview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+#user-panel {
+  flex: 0 0 40px;
+  padding: 4px 10px;
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#user-panel select {
+  flex: 1;
+  margin-left: 8px;
+  font-size: 13px;
+  padding: 3px;
+}
+
+/* --- Mobile / portrait mode (≤768px) --- */
+@media (max-width: 768px) and (orientation: portrait) {
+  #split-container {
+    flex-direction: column;
+  }
+
+  #graph-div {
+    flex: 0 0 33vh;  /* top third */
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+
+  #info-container {
+    flex: 1;
+    height: 67vh;
+    overflow: hidden;
+  }
+
+  #info-panel {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  #image-wrapper {
+    height: 25vh;
+    max-height: 40%;
+  }
+
+  #user-panel {
+    flex: 0 0 40px;
+    height: 40px;
+  }
+}
+
+/* --- Landscape tablets/phones (≤768px width, landscape) --- */
+@media (max-width: 768px) and (orientation: landscape) {
+  #split-container {
+    flex-direction: row;
+  }
+
+  #graph-div {
+    flex: 1.2;
+  }
+
+  #info-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #info-panel {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  #user-panel {
+    flex: 0 0 40px;
+    height: 40px;
+  }
+}
+ 
+     </style>
+</head>
+
+<body>
+  <div id="split-container">
+    <div id="graph-div">
+      <div id="spinner">Loading data...</div>
+    </div>
+    <div id="info-container">
+      <div id="info-panel">
+        <div id="info-text">
+          <h3>Select a skill</h3>
+          <p>Click a skill to load details!</p>
+        </div>
+        <div id="image-wrapper"></div>
+      </div>
+      <div id="user-panel">
+        <select id="user-select">
+          <option value="">— Select user —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function main() {
+      const cors = "https://api.allorigins.win/raw?url=";
+
+     const base = "https://thatkow.github.io/nucc-progression-map/";
+
+    // ✅ Load definition.json
+    const defURL = base + "definition.json";
+    const defResp = await fetch(defURL);
+    const definition = await defResp.json();
+    console.log("✅ Loaded definition.json:", definition);
+
+    // ✅ Load user progress CSV
+    const csvURL = base + "user_progress.csv";
+    const csvResp = await fetch(csvURL);
+    const csvText = await csvResp.text();
+    console.log("✅ Loaded user progress CSV:", csvText);
+
+      // Parse CSV → userProgress object
+      const rows = csvText.trim().split("\n").map(r => r.split(","));
+      const headers = rows[0].slice(1);
+      const userProgress = {};
+      for (let i = 1; i < rows.length; i++) {
+        const [user, ...dates] = rows[i];
+        userProgress[user] = {};
+        headers.forEach((node, j) => {
+          if (dates[j] && dates[j].trim() !== "")
+            userProgress[user][node.trim()] = dates[j].trim();
+        });
+      }
+      console.log("✅ Parsed user progress:", userProgress);
+
+      document.getElementById("spinner").style.display = "none";
+
+      // ✅ Build the network
+      const container = document.getElementById("graph-div");
+      const nodes = new vis.DataSet();
+      const edges = new vis.DataSet();
+
+      const layout = definition.layout || {};
+      const hasLayout = Object.keys(layout).length > 0;
+
+      // 🧭 fallback grid layout
+      const gridCols = 4;
+      const spacingX = 300;
+      const spacingY = 180;
+
+      for (let i = 0; i < definition.nodes.length; i++) {
+        const node = definition.nodes[i];
+        let x = 0, y = 0;
+
+        if (hasLayout && layout[node.id]) {
+          x = layout[node.id].x ?? 0;
+          y = layout[node.id].y ?? 0;
+        } else if (node.x !== undefined && node.y !== undefined) {
+          x = node.x; y = node.y;
+        } else {
+          const col = i % gridCols;
+          const row = Math.floor(i / gridCols);
+          x = col * spacingX;
+          y = row * spacingY;
+        }
+
+        const imgPath = "images/" + encodeURIComponent(node.id) + ".png";
+        nodes.add({
+          id: node.id,
+          label: node.id,
+          title: `${node.id}\nCategory: ${node.category || ""}\nSign-off: ${node.signoff || ""}`,
+          category: node.category,
+          signoff: node.signoff,
+          description: node.description,
+          shape: "box",
+          color: node.color,
+          fixed: { x: true, y: true },
+          x, y,
+          imagefile: imgPath
+        });
+      }
+
+      for (const edge of definition.edges)
+        edges.add({ from: edge.from, to: edge.to, arrows: "to" });
+
+      const data = { nodes, edges };
+      const options = {
+        physics: { enabled: false },
+        interaction: {
+          dragNodes: false,
+          dragView: false,
+          zoomView: true,
+          selectable: true,
+          multiselect: false,
+          navigationButtons: false,
+          keyboard: false
+        },
+        edges: {
+          smooth: false,
+          arrows: { to: { enabled: true, scaleFactor: 0.8 } },
+          color: { color: "#333333" }
+        },
+        nodes: { borderWidth: 1 }
+      };
+
+      const network = new vis.Network(container, data, options);
+      const originalColors = {};
+      network.body.data.nodes.get().forEach(n => { originalColors[n.id] = n.color; });
+
+      // ✅ Populate user dropdown
+      const users = Object.keys(userProgress);
+      const select = document.getElementById("user-select");
+      users.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u;
+        opt.textContent = u;
+        select.appendChild(opt);
+      });
+
+      // ✅ Node click → show info panel + image
+      network.on("click", function (params) {
+        const textPanel = document.getElementById("info-text");
+        const imagePanel = document.getElementById("image-wrapper");
+        if (params.nodes.length > 0) {
+          const nodeId = params.nodes[0];
+          const node = this.body.data.nodes.get(nodeId);
+          const imgTag = node.imagefile ? `<img src='${node.imagefile}' class='preview' alt='${node.label} image'>` : '';
+          textPanel.innerHTML = `
+            <h3>${node.label}</h3>
+            <b>Category:</b> ${node.category || "—"}<br>
+            <b>Sign-off:</b> ${node.signoff || "—"}<br><br>
+            <div style="white-space:pre-wrap;">${node.description || ""}</div>
+          `;
+          imagePanel.innerHTML = imgTag;
+        }
+      });
+
+      // ✅ Highlight user progress
+      select.addEventListener("change", function () {
+        const user = this.value;
+        const allNodes = network.body.data.nodes.get();
+        allNodes.forEach(n => {
+          const origColor = originalColors[n.id] || "#cccccc";
+          if (!user) {
+            network.body.data.nodes.update({ id: n.id, color: origColor, title: n.title });
+          } else if (userProgress[user] && userProgress[user][n.id]) {
+            const date = userProgress[user][n.id];
+            network.body.data.nodes.update({
+              id: n.id,
+              color: origColor,
+              title: n.label + "\nCompleted: " + date
+            });
+          } else {
+            network.body.data.nodes.update({
+              id: n.id,
+              color: "#dddddd",
+              title: n.label + "\nNot yet completed"
+            });
+          }
+        });
+      });
+
+      // ✅ Center the graph view after load
+      network.fit({ animation: { duration: 800 } });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await main();
+    });
+  </script>
 </body>
 </html>
