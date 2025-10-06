@@ -160,23 +160,24 @@ img.preview {
 
   <script>
     async function main() {
-      const cors = "https://api.allorigins.win/raw?url=";
 
-     const base = "https://thatkow.github.io/nucc-progression-map/";
+const base = "https://thatkow.github.io/nucc-progression-map/";
+const cachebust = "?v=" + new Date().getTime();
 
-    // ✅ Load definition.json
-    const defURL = base + "definition.json";
-    const defResp = await fetch(defURL);
-    const definition = await defResp.json();
-    console.log("✅ Loaded definition.json:", definition);
+  // ✅ Load definition.json (with cache-bust)
+  const defURL = base + "definition.json" + cachebust;
+  const defResp = await fetch(defURL);
+  const definition = await defResp.json();
+  console.log("✅ Loaded definition.json:", definition);
 
-    // ✅ Load user progress CSV
-    const csvURL = base + "user_progress.csv";
-    const csvResp = await fetch(csvURL);
-    const csvText = await csvResp.text();
-    console.log("✅ Loaded user progress CSV:", csvText);
+  // ✅ Load user progress CSV (with cache-bust)
+  const csvURL = base + "user_progress.csv" + cachebust;
+  const csvResp = await fetch(csvURL);
+  const csvText = await csvResp.text();
+  console.log("✅ Loaded user progress CSV:", csvText);
 
-      // Parse CSV → userProgress object
+
+          // Parse CSV → userProgress object
       const rows = csvText.trim().split("\n").map(r => r.split(","));
       const headers = rows[0].slice(1);
       const userProgress = {};
