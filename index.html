@@ -164,11 +164,20 @@ img.preview {
 const base = "https://thatkow.github.io/nucc-progression-map/";
 const cachebust = "?v=" + new Date().getTime();
 
-  // ✅ Load definition.json (with cache-bust)
-  const defURL = base + "definition.json" + cachebust;
+  // ✅ Load definition.csv (with cache-bust)
+  const defURL = base + "definition.csv" + cachebust;
   const defResp = await fetch(defURL);
-  const definition = await defResp.json();
-  console.log("✅ Loaded definition.json:", definition);
+  const defText = await defResp.text();
+  console.log("✅ Loaded definition.csv:", defText);
+
+  // 🔄 Parse CSV into structured data
+  const defRows = defText.trim().split(/\r?\n/).map(r => r.split(","));
+  const headers = defRows.shift();
+  const definition = defRows.map(row =>
+    Object.fromEntries(row.map((val, i) => [headers[i], val]))
+  );
+  console.log("✅ Parsed definition data:", definition);
+
 
   // ✅ Load user progress CSV (with cache-bust)
   const csvURL = base + "user_progress.csv" + cachebust;

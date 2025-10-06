@@ -1,38 +1,35 @@
-name: Sync Google Sheets to Data Files
+name: 🔄 Sync Google Sheets to CSV
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # every 30 minutes
-  workflow_dispatch:         # manual trigger
-
-permissions:
-  contents: write
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download definition.json from Google Sheets
-        run: |
-          curl -L "https://drive.usercontent.google.com/download?id=1SS7UDnTV-yOPLNldTvB8Wqt0rY9KeFQ3&export=download&authuser=0" \
-            -o definition.json
-
-      - name: Download user_progress.csv from Google Sheets
-        run: |
-          curl -L "https://docs.google.com/spreadsheets/d/1jUTLoRPed6HDuUb9cCZXaPJ9GRIjEfXpbYd63jPk32I/export?format=csv" \
-            -o user_progress.csv
-
-      - name: Commit and push if changed
+      - name: ⚙️ Set up Git
         run: |
           git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          if git diff --quiet user_progress.csv definition.csv definition.json 2>/dev/null; then
-            echo "No changes."
-          else
-            git add user_progress.csv definition.csv definition.json || true
-            git commit -am "🔄 Auto-update from Google Sheets"
-            git push
-          fi
+          git config user.email "github-actions@github.com"
+
+      - name: 📊 Download definition.csv from Google Sheets
+        run: |
+          curl -L "https://docs.google.com/spreadsheets/d/1TiKDHGDLdDtzuPecKuGMR_Bh_nGs9FKKw75IjXQ43YI/export?format=csv" \
+            -o definition.csv
+
+      - name: 👤 Download user_progress.csv from Google Sheets
+        run: |
+          curl -L "https://docs.google.com/spreadsheets/d/1bfFIBtzalMzUBCkfJ_5W3WrCMRDMSMPY-9cHBhxVVuM/export?format=csv" \
+            -o user_progress.csv
+
+      - name: 🧾 Commit and push updates
+        run: |
+          git add definition.csv user_progress.csv
+          git commit -m "🔄 Auto-update CSVs from Google Sheets" || echo "No changes to commit"
+          git push
+
