@@ -115,7 +115,7 @@
       const cors = "https://api.allorigins.win/raw?url=";
 
       // ✅ Load definition.json
-      const defURL = cors + encodeURIComponent("https://drive.google.com/uc?export=download&id=1ioqhEoWUF4kuke9kuyPTJ9iPsuHIbHzo");
+      const defURL = cors + encodeURIComponent("https://drive.google.com/uc?export=download&id=1SS7UDnTV-yOPLNldTvB8Wqt0rY9KeFQ3");
       const defResp = await fetch(defURL);
       const definition = await defResp.json();
       console.log("✅ Loaded definition.json:", definition);
@@ -123,7 +123,7 @@
       // ✅ Load user progress from Google Sheets
       const timestamp = new Date().getTime();
       const csvURL = cors + encodeURIComponent(
-        "https://docs.google.com/spreadsheets/d/1bfFIBtzalMzUBCkfJ_5W3WrCMRDMSMPY-9cHBhxVVuM/export?format=csv&cachebust=" + timestamp
+        "https://docs.google.com/spreadsheets/d/1jUTLoRPed6HDuUb9cCZXaPJ9GRIjEfXpbYd63jPk32I/export?format=csv&cachebust=" + timestamp
       );
       const csvResp = await fetch(csvURL);
       const csvText = await csvResp.text();
