@@ -5,6 +5,9 @@ on:
     - cron: "0 * * * *" # every hour
   workflow_dispatch:
 
+permissions:
+  contents: write  # ✅ allow pushing changes
+
 jobs:
   sync:
     runs-on: ubuntu-latest
