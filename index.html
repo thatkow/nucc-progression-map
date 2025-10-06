@@ -159,185 +159,127 @@ img.preview {
   </div>
 
   <script>
-    async function main() {
-      const base = "https://thatkow.github.io/nucc-progression-map/";
-      const cachebust = "?v=" + new Date().getTime();
+  const base = "https://thatkow.github.io/nucc-progression-map/";
+const cachebust = "?v=" + new Date().getTime();
 
-      // ✅ Load definition.csv (with cache-bust)
-      const defURL = base + "definition.csv" + cachebust;
-      const defResp = await fetch(defURL);
-      const defText = await defResp.text();
-      console.log("✅ Loaded definition.csv:", defText);
+async function main() {
+  // ✅ Load definition.csv (with cache-bust)
+  const defURL = base + "definition.csv" + cachebust;
+  const defResp = await fetch(defURL);
+  const defText = await defResp.text();
+  console.log("✅ Loaded definition.csv:", defText);
 
-      // 🔄 Parse CSV into structured data (handles quoted commas)
-      const defRows = defText
-        .trim()
-        .split(/\r?\n/)
-        .map(line =>
-          line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(s => s.replace(/^"|"$/g, "")) || []
-        );
+  // 🔄 Parse CSV into structured array
+  const defRows = defText.trim().split(/\r?\n/).map(r => r.split(","));
+  const defHeaders = defRows.shift();
+  const definition = defRows.map(row =>
+    Object.fromEntries(row.map((val, i) => [defHeaders[i], val]))
+  );
+  console.log("✅ Parsed definition data:", definition);
 
-      const defHeaders = defRows.shift();
-      const definition = defRows.map(row =>
-        Object.fromEntries(row.map((val, i) => [defHeaders[i], val]))
-      );
+  // ✅ Build nodes and edges directly
+  const nodes = new vis.DataSet();
+  const edges = new vis.DataSet();
+  const gridCols = 4, spacingX = 300, spacingY = 180;
 
-      console.log("✅ Parsed definition data:", definition);
+  for (let i = 0; i < definition.length; i++) {
+    const node = definition[i];
+    const id = node.id || node["Name"];
+    const x = parseFloat(node.x || 0);
+    const y = parseFloat(node.y || 0);
+    const imgPath = "images/" + encodeURIComponent(id) + ".png";
 
-      // ✅ Load user progress CSV (with cache-bust)
-      const csvURL = base + "user_progress.csv" + cachebust;
-      const csvResp = await fetch(csvURL);
-      const csvText = await csvResp.text();
-      console.log("✅ Loaded user progress CSV:", csvText);
-
-          // Parse CSV → userProgress object
-      const rows = csvText.trim().split("\n").map(r => r.split(","));
-      const headers = rows[0].slice(1);
-      const userProgress = {};
-      for (let i = 1; i < rows.length; i++) {
-        const [user, ...dates] = rows[i];
-        userProgress[user] = {};
-        headers.forEach((node, j) => {
-          if (dates[j] && dates[j].trim() !== "")
-            userProgress[user][node.trim()] = dates[j].trim();
-        });
-      }
-      console.log("✅ Parsed user progress:", userProgress);
-
-      document.getElementById("spinner").style.display = "none";
-
-      // ✅ Build the network
-      const container = document.getElementById("graph-div");
-      const nodes = new vis.DataSet();
-      const edges = new vis.DataSet();
-
-      const layout = definition.layout || {};
-      const hasLayout = Object.keys(layout).length > 0;
-
-      // 🧭 fallback grid layout
-      const gridCols = 4;
-      const spacingX = 300;
-      const spacingY = 180;
-
-      for (let i = 0; i < definition.nodes.length; i++) {
-        const node = definition.nodes[i];
-        let x = 0, y = 0;
-
-        if (hasLayout && layout[node.id]) {
-          x = layout[node.id].x ?? 0;
-          y = layout[node.id].y ?? 0;
-        } else if (node.x !== undefined && node.y !== undefined) {
-          x = node.x; y = node.y;
-        } else {
-          const col = i % gridCols;
-          const row = Math.floor(i / gridCols);
-          x = col * spacingX;
-          y = row * spacingY;
-        }
-
-        const imgPath = "images/" + encodeURIComponent(node.id) + ".png";
-        nodes.add({
-          id: node.id,
-          label: node.id,
-          title: `${node.id}\nCategory: ${node.category || ""}\nSign-off: ${node.signoff || ""}`,
-          category: node.category,
-          signoff: node.signoff,
-          description: node.description,
-          shape: "box",
-          color: node.color,
-          fixed: { x: true, y: true },
-          x, y,
-          imagefile: imgPath
-        });
-      }
-
-      for (const edge of definition.edges)
-        edges.add({ from: edge.from, to: edge.to, arrows: "to" });
-
-      const data = { nodes, edges };
-      const options = {
-        physics: { enabled: false },
-        interaction: {
-          dragNodes: false,
-          dragView: false,
-          zoomView: true,
-          selectable: true,
-          multiselect: false,
-          navigationButtons: false,
-          keyboard: false
-        },
-        edges: {
-          smooth: false,
-          arrows: { to: { enabled: true, scaleFactor: 0.8 } },
-          color: { color: "#333333" }
-        },
-        nodes: { borderWidth: 1 }
-      };
-
-      const network = new vis.Network(container, data, options);
-      const originalColors = {};
-      network.body.data.nodes.get().forEach(n => { originalColors[n.id] = n.color; });
-
-      // ✅ Populate user dropdown
-      const users = Object.keys(userProgress);
-      const select = document.getElementById("user-select");
-      users.forEach(u => {
-        const opt = document.createElement("option");
-        opt.value = u;
-        opt.textContent = u;
-        select.appendChild(opt);
-      });
-
-      // ✅ Node click → show info panel + image
-      network.on("click", function (params) {
-        const textPanel = document.getElementById("info-text");
-        const imagePanel = document.getElementById("image-wrapper");
-        if (params.nodes.length > 0) {
-          const nodeId = params.nodes[0];
-          const node = this.body.data.nodes.get(nodeId);
-          const imgTag = node.imagefile ? `<img src='${node.imagefile}' class='preview' alt='${node.label} image'>` : '';
-          textPanel.innerHTML = `
-            <h3>${node.label}</h3>
-            <b>Category:</b> ${node.category || "—"}<br>
-            <b>Sign-off:</b> ${node.signoff || "—"}<br><br>
-            <div style="white-space:pre-wrap;">${node.description || ""}</div>
-          `;
-          imagePanel.innerHTML = imgTag;
-        }
-      });
-
-      // ✅ Highlight user progress
-      select.addEventListener("change", function () {
-        const user = this.value;
-        const allNodes = network.body.data.nodes.get();
-        allNodes.forEach(n => {
-          const origColor = originalColors[n.id] || "#cccccc";
-          if (!user) {
-            network.body.data.nodes.update({ id: n.id, color: origColor, title: n.title });
-          } else if (userProgress[user] && userProgress[user][n.id]) {
-            const date = userProgress[user][n.id];
-            network.body.data.nodes.update({
-              id: n.id,
-              color: origColor,
-              title: n.label + "\nCompleted: " + date
-            });
-          } else {
-            network.body.data.nodes.update({
-              id: n.id,
-              color: "#dddddd",
-              title: n.label + "\nNot yet completed"
-            });
-          }
-        });
-      });
-
-      // ✅ Center the graph view after load
-      network.fit({ animation: { duration: 800 } });
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      await main();
+    nodes.add({
+      id,
+      label: id,
+      title: `${id}\nCategory: ${node.category || ""}\nSign-off: ${node.signoff || ""}`,
+      category: node.category,
+      signoff: node.signoff,
+      description: node.description,
+      shape: "box",
+      color: node.color || "#cccccc",
+      fixed: { x: true, y: true },
+      x, y,
+      imagefile: imgPath
     });
+
+    // if "prereq" or "from" fields exist
+    if (node.prereq) {
+      node.prereq.split(";").forEach(pr => {
+        if (pr.trim()) edges.add({ from: pr.trim(), to: id, arrows: "to" });
+      });
+    }
+  }
+
+  // ✅ Load user progress CSV
+  const csvURL = base + "user_progress.csv" + cachebust;
+  const csvResp = await fetch(csvURL);
+  const csvText = await csvResp.text();
+  console.log("✅ Loaded user progress CSV:", csvText);
+
+  // parse user progress
+  const rows = csvText.trim().split("\n").map(r => r.split(","));
+  const headers = rows[0].slice(1);
+  const userProgress = {};
+  for (let i = 1; i < rows.length; i++) {
+    const [user, ...dates] = rows[i];
+    userProgress[user] = {};
+    headers.forEach((node, j) => {
+      if (dates[j] && dates[j].trim() !== "")
+        userProgress[user][node.trim()] = dates[j].trim();
+    });
+  }
+  console.log("✅ Parsed user progress:", userProgress);
+
+  document.getElementById("spinner").style.display = "none";
+
+  const container = document.getElementById("graph-div");
+  const network = new vis.Network(container, { nodes, edges }, {
+    physics: { enabled: false },
+    interaction: { dragNodes: false, dragView: false, zoomView: true },
+    edges: { smooth: false, arrows: { to: { enabled: true, scaleFactor: 0.8 } } },
+    nodes: { borderWidth: 1 }
+  });
+
+  // ✅ user select logic
+  const select = document.getElementById("user-select");
+  Object.keys(userProgress).forEach(u => {
+    const opt = document.createElement("option");
+    opt.value = u; opt.textContent = u; select.appendChild(opt);
+  });
+
+  const originalColors = {};
+  nodes.get().forEach(n => originalColors[n.id] = n.color);
+
+  select.addEventListener("change", function() {
+    const user = this.value;
+    nodes.get().forEach(n => {
+      const origColor = originalColors[n.id];
+      if (!user) nodes.update({ id: n.id, color: origColor });
+      else if (userProgress[user] && userProgress[user][n.id])
+        nodes.update({ id: n.id, color: origColor });
+      else nodes.update({ id: n.id, color: "#dddddd" });
+    });
+  });
+
+  // ✅ show node info
+  network.on("click", function (params) {
+    if (params.nodes.length > 0) {
+      const node = nodes.get(params.nodes[0]);
+      const imgTag = node.imagefile ? `<img src='${node.imagefile}' class='preview' alt='${node.label} image'>` : '';
+      document.getElementById("info-text").innerHTML = `
+        <h3>${node.label}</h3>
+        <b>Category:</b> ${node.category}<br>
+        <b>Sign-off:</b> ${node.signoff}<br><br>
+        <div style="white-space:pre-wrap;">${node.description}</div>
+      `;
+      document.getElementById("image-wrapper").innerHTML = imgTag;
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", main);
+
   </script>
 </body>
 </html>
