@@ -84,27 +84,27 @@
     width: clamp(54px, 12vw, 90px);
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.45);
-    background: rgba(0, 0, 0, 0.45);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    backdrop-filter: blur(2px);
     color: #dfe8ff;
     position: relative;
-    overflow: hidden;
+    isolation: isolate;
   }
 
   .icon-button::before {
     content: "";
     position: absolute;
-    inset: 12%;
+    inset: 6%;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
-    z-index: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: -1;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.15);
   }
 
   .icon-button svg {
@@ -118,15 +118,15 @@
   .icon-button:hover,
   .icon-button:focus-visible {
     transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
-    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6), 0 0 32px rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.75);
     outline: none;
   }
 
   .icon-button:hover::before,
   .icon-button:focus-visible::before {
-    opacity: 1;
     transform: scale(1.05);
+    box-shadow: 0 0 32px rgba(255, 255, 255, 0.3);
   }
 
   .icon-button:hover svg,
