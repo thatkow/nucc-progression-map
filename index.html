@@ -289,11 +289,13 @@
         return;
       }
 
-      const padding = 50;
+      const marginRatio = 0.05;
       const rangeX = Math.max(maxX - minX, 1);
       const rangeY = Math.max(maxY - minY, 1);
-      const scaleX = (width - padding * 2) / rangeX;
-      const scaleY = (height - padding * 2) / rangeY;
+      const usableWidth = Math.max(width * (1 - marginRatio * 2), 1);
+      const usableHeight = Math.max(height * (1 - marginRatio * 2), 1);
+      const scaleX = usableWidth / rangeX;
+      const scaleY = usableHeight / rangeY;
       const scale = Math.max(Math.min(scaleX, scaleY), 0.01);
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
