@@ -75,7 +75,7 @@
     width: clamp(54px, 12vw, 90px);
     aspect-ratio: 1;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.45);
     background: transparent;
     box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
     display: inline-flex;
@@ -85,14 +85,16 @@
     color: #dfe8ff;
     position: relative;
     isolation: isolate;
+    overflow: visible;
   }
 
   .icon-button::before {
     content: "";
     position: absolute;
-    inset: 0;
+    inset: -12%;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.35);
     z-index: -1;
   }
 
