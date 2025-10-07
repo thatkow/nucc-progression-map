@@ -264,6 +264,8 @@
     };
 
     const network = new vis.Network(container, data, options);
+    let minAllowedScale = null;
+    let initialBounds = null;
 
     function fitNetworkToNodes() {
       const width = container.clientWidth;
@@ -290,8 +292,10 @@
       }
 
       const marginRatio = 0.1;
-      const rangeX = Math.max(maxX - minX, 1);
-      const rangeY = Math.max(maxY - minY, 1);
+      const spanX = Math.max(maxX - minX, 0);
+      const spanY = Math.max(maxY - minY, 0);
+      const rangeX = Math.max(spanX, 1);
+      const rangeY = Math.max(spanY, 1);
       const usableWidth = Math.max(width * (1 - marginRatio * 2), 1);
       const usableHeight = Math.max(height * (1 - marginRatio * 2), 1);
       const scaleX = usableWidth / rangeX;
@@ -300,11 +304,69 @@
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
 
+      minAllowedScale = scale;
+      const marginX = rangeX * marginRatio;
+      const marginY = rangeY * marginRatio;
+      initialBounds = {
+        minX: minX - marginX,
+        maxX: maxX + marginX,
+        minY: minY - marginY,
+        maxY: maxY + marginY
+      };
+
       network.moveTo({
         position: { x: centerX, y: centerY },
         scale,
         animation: false
       });
+      clampView(scale, { x: centerX, y: centerY });
+    }
+
+    function clampView(scaleOverride = null, positionOverride = null) {
+      if (!initialBounds) return;
+
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (!width || !height) return;
+
+      const currentScale = scaleOverride ?? network.getScale();
+      const currentPosition = positionOverride ?? network.getViewPosition();
+      const effectiveScale = minAllowedScale !== null
+        ? Math.max(currentScale, minAllowedScale)
+        : currentScale;
+
+      const halfWidth = width / (effectiveScale * 2);
+      const halfHeight = height / (effectiveScale * 2);
+
+      let minCenterX = initialBounds.minX + halfWidth;
+      let maxCenterX = initialBounds.maxX - halfWidth;
+      let minCenterY = initialBounds.minY + halfHeight;
+      let maxCenterY = initialBounds.maxY - halfHeight;
+
+      if (minCenterX > maxCenterX) {
+        const midX = (initialBounds.minX + initialBounds.maxX) / 2;
+        minCenterX = maxCenterX = midX;
+      }
+      if (minCenterY > maxCenterY) {
+        const midY = (initialBounds.minY + initialBounds.maxY) / 2;
+        minCenterY = maxCenterY = midY;
+      }
+
+      const clampedX = Math.min(Math.max(currentPosition.x, minCenterX), maxCenterX);
+      const clampedY = Math.min(Math.max(currentPosition.y, minCenterY), maxCenterY);
+
+      const needsMove =
+        Math.abs(clampedX - currentPosition.x) > 1e-2 ||
+        Math.abs(clampedY - currentPosition.y) > 1e-2 ||
+        Math.abs(effectiveScale - currentScale) > 1e-6;
+
+      if (needsMove) {
+        network.moveTo({
+          position: { x: clampedX, y: clampedY },
+          scale: effectiveScale,
+          animation: false
+        });
+      }
     }
 
     const resizeObserver = typeof ResizeObserver !== "undefined"
@@ -321,6 +383,20 @@
       network.off("afterDrawing", handleAfterDrawing);
     };
     network.on("afterDrawing", handleAfterDrawing);
+
+    network.on("zoom", params => {
+      clampView(params.scale);
+    });
+
+    network.on("dragEnd", params => {
+      if (!params.nodes || params.nodes.length === 0) {
+        clampView();
+      }
+    });
+
+    network.on("animationFinished", () => {
+      clampView();
+    });
 
     // 👥 Populate user dropdown
     const select = document.getElementById('user-select');
