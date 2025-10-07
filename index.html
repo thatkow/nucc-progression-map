@@ -82,21 +82,30 @@
   @media screen and (orientation: portrait) {
     #split-container {
       flex-direction: column !important;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    #graph-div,
+    #info-container {
+      flex: 0 0 50vh;
+      flex-basis: min(50vh, 50dvh);
+      max-height: 50vh;
+      max-height: 50dvh;
     }
 
     #graph-div {
-      flex: 0 0 40vh;
       border-right: none;
       border-bottom: 1px solid #ccc;
     }
 
     #info-container {
-      flex: 1;
-      height: 60vh;
+      overflow: hidden;
     }
 
     #info-panel {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
     }
 
