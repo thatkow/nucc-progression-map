@@ -264,6 +264,7 @@
     };
 
     const network = new vis.Network(container, data, options);
+    let minAllowedScale = null;
 
     function fitNetworkToNodes() {
       const width = container.clientWidth;
@@ -300,6 +301,8 @@
       const centerX = (minX + maxX) / 2;
       const centerY = (minY + maxY) / 2;
 
+      minAllowedScale = scale;
+
       network.moveTo({
         position: { x: centerX, y: centerY },
         scale,
@@ -321,6 +324,17 @@
       network.off("afterDrawing", handleAfterDrawing);
     };
     network.on("afterDrawing", handleAfterDrawing);
+
+    network.on("zoom", params => {
+      if (minAllowedScale !== null && params.scale < minAllowedScale) {
+        const currentPosition = network.getViewPosition();
+        network.moveTo({
+          position: currentPosition,
+          scale: minAllowedScale,
+          animation: false
+        });
+      }
+    });
 
     // 👥 Populate user dropdown
     const select = document.getElementById('user-select');
