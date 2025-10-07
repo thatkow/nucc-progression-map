@@ -171,19 +171,71 @@
 
     const container = document.getElementById('graph-div');
 
-    // 🧭 Build nodes
-    const nodes = new vis.DataSet(definition.map(n => ({
-      id: n.id,
-      label: n.id,
-      title: n.description,
-      color: n.color,
-      x: Number(n.x),
-      y: Number(n.y),
-      fixed: { x: true, y: true },
-      category: n.category,
-      signoff: n.signoff,
-      description: n.description
-    })));
+    const iconCache = {};
+
+    function createGrayscaleDataURL(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < imageData.data.length; i += 4) {
+              const r = imageData.data[i];
+              const g = imageData.data[i + 1];
+              const b = imageData.data[i + 2];
+              const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+              imageData.data[i] = gray;
+              imageData.data[i + 1] = gray;
+              imageData.data[i + 2] = gray;
+            }
+            ctx.putImageData(imageData, 0, 0);
+            resolve(canvas.toDataURL());
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function ensureIcon(nodeId) {
+      if (iconCache[nodeId]) return iconCache[nodeId];
+      const iconName = encodeURIComponent(nodeId) + ".png";
+      const iconURL = base + "icons/" + iconName + cachebust;
+      try {
+        const grayscale = await createGrayscaleDataURL(iconURL);
+        iconCache[nodeId] = { color: iconURL, gray: grayscale };
+      } catch (err) {
+        console.warn("⚠️ Unable to build grayscale icon for", nodeId, err);
+        iconCache[nodeId] = { color: iconURL, gray: iconURL };
+      }
+      return iconCache[nodeId];
+    }
+
+    const nodeEntries = await Promise.all(definition.map(async n => {
+      const icons = await ensureIcon(n.id);
+      return {
+        id: n.id,
+        title: n.description,
+        image: icons.color,
+        shape: "image",
+        x: Number(n.x),
+        y: Number(n.y),
+        fixed: { x: true, y: true },
+        category: n.category,
+        signoff: n.signoff,
+        description: n.description
+      };
+    }));
+
+    const nodes = new vis.DataSet(nodeEntries);
 
     // 🔗 Build edges from prereq column
     const edgesArr = [];
@@ -208,15 +260,11 @@
         zoomView: true
       },
       edges: { smooth: false, color: "#333" },
-      nodes: { shape: "box", borderWidth: 1 }
+      nodes: { shape: "image", borderWidth: 0, chosen: false }
     };
 
     const network = new vis.Network(container, data, options);
     network.fit({ animation: false });
-
-    // 🎨 Preserve original colors
-    const originalColors = {};
-    nodes.forEach(n => originalColors[n.id] = n.color);
 
     // 👥 Populate user dropdown
     const select = document.getElementById('user-select');
@@ -228,22 +276,87 @@
     });
 
     // 👤 User progress toggle
-    select.addEventListener('change', () => {
-      const user = select.value;
-      const progress = userProgress[user] || {};
-      nodes.forEach(n => nodes.update({ id: n.id, color: originalColors[n.id] }));
-      if (user) {
-        nodes.forEach(n => {
-          const completed = progress[n.id];
-          if (!completed) nodes.update({ id: n.id, color: "#cccccc" });
+    let selectedNodeId = null;
+
+    function iconForNode(id) {
+      return iconCache[id] || { color: "", gray: "" };
+    }
+
+    function nodeVisualState(nodeId, progressMap) {
+      const icons = iconForNode(nodeId);
+      const completed = !progressMap ? true : !!progressMap[nodeId];
+      return {
+        image: completed ? icons.color : icons.gray,
+        completed
+      };
+    }
+
+    function applyNodeStyles(progressMap) {
+      nodes.forEach(node => {
+        const visual = nodeVisualState(node.id, progressMap);
+        const update = {
+          id: node.id,
+          image: visual.image,
+          opacity: visual.completed ? 1 : 0.45
+        };
+        if (selectedNodeId === node.id) {
+          update.shape = "circularImage";
+          update.borderWidth = 4;
+          update.borderWidthSelected = 4;
+          update.color = { border: "#2b7ce9", highlight: { border: "#2b7ce9" } };
+        } else {
+          update.shape = "image";
+          update.borderWidth = 0;
+          update.borderWidthSelected = 0;
+          update.color = { border: "rgba(0,0,0,0)" };
+        }
+        nodes.update(update);
+      });
+    }
+
+    function setSelectedNode(nodeId, progressMap) {
+      if (selectedNodeId === nodeId) return;
+      const previous = selectedNodeId;
+      selectedNodeId = nodeId;
+      if (previous) {
+        const visual = nodeVisualState(previous, progressMap);
+        nodes.update({
+          id: previous,
+          shape: "image",
+          borderWidth: 0,
+          borderWidthSelected: 0,
+          color: { border: "rgba(0,0,0,0)" },
+          image: visual.image,
+          opacity: visual.completed ? 1 : 0.45
         });
       }
+      if (selectedNodeId) {
+        const visual = nodeVisualState(selectedNodeId, progressMap);
+        nodes.update({
+          id: selectedNodeId,
+          shape: "circularImage",
+          borderWidth: 4,
+          borderWidthSelected: 4,
+          color: { border: "#2b7ce9", highlight: { border: "#2b7ce9" } },
+          image: visual.image,
+          opacity: visual.completed ? 1 : 0.45
+        });
+      }
+    }
+
+    select.addEventListener('change', () => {
+      const user = select.value;
+      const progress = user ? userProgress[user] || {} : null;
+      applyNodeStyles(progress);
     });
 
     // 🖱️ Node click info & image
     network.on("click", params => {
       if (params.nodes.length) {
         const node = nodes.get(params.nodes[0]);
+        const user = select.value;
+        const progress = user ? userProgress[user] || {} : null;
+        setSelectedNode(node.id, progress);
         const info = document.getElementById('info-text');
         const imagePanel = document.getElementById('image-wrapper');
         info.innerHTML = `
@@ -262,8 +375,19 @@
           imagePanel.innerHTML = "";
         };
         testImg.src = imgURL;
+      } else {
+        const user = select.value;
+        const progress = user ? userProgress[user] || {} : null;
+        setSelectedNode(null, progress);
+        const info = document.getElementById('info-text');
+        const imagePanel = document.getElementById('image-wrapper');
+        info.innerHTML = "";
+        imagePanel.innerHTML = "";
       }
     });
+
+    // Initialize node appearance
+    applyNodeStyles(null);
   }
 
   main();
