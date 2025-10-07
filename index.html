@@ -6,18 +6,136 @@
   <script src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
   <link href="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.css" rel="stylesheet" />
   <style>
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background-color: #000;
+    color: #f0f0f0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
   /* --- Base layout (desktop & landscape default) --- */
   #split-container {
     display: flex;
     flex-direction: row;
     height: 100vh;
     width: 100%;
+    background: #000;
   }
 
   #graph-div {
     flex: 2;
-    border-right: 1px solid #ccc;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
     overflow: hidden;
+    position: relative;
+    isolation: isolate;
+    background: #000;
+    color: #fff;
+  }
+
+  #graph-div::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("background.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: 0;
+    transform: scale(1.02);
+  }
+
+  #graph-div::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.75) 100%);
+    z-index: 1;
+  }
+
+  #graph-div > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  #graph-hotspots {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .hotspot-column {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(10px, 4vw, 40px) 0;
+  }
+
+  .icon-button {
+    pointer-events: auto;
+    width: clamp(54px, 12vw, 90px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    backdrop-filter: blur(2px);
+    color: #dfe8ff;
+  }
+
+  .icon-button svg {
+    width: 60%;
+    height: 60%;
+    transition: filter 0.25s ease, drop-shadow 0.25s ease;
+  }
+
+  .icon-button:hover,
+  .icon-button:focus-visible {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.8);
+    outline: none;
+  }
+
+  .icon-button:hover svg,
+  .icon-button:focus-visible svg {
+    filter: brightness(1.2) saturate(1.1) drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+  }
+
+  .icon-button.canyoner svg {
+    filter: brightness(1.35);
+  }
+
+  .icon-button.caver svg {
+    filter: brightness(1.1);
+  }
+
+  .icon-button.rescue svg {
+    filter: brightness(0.9);
+  }
+
+  .icon-button.canyoner {
+    color: #f5fcff;
+  }
+
+  .icon-button.caver {
+    color: #e2ecff;
+  }
+
+  .icon-button.rescue {
+    color: #cad3ff;
   }
 
   #info-container {
@@ -32,7 +150,8 @@
     flex: 1;
     overflow-y: auto;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: rgba(20, 20, 20, 0.95);
+    color: #f0f0f0;
   }
 
   #image-wrapper {
@@ -47,19 +166,20 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    border: 1px solid #bbb;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-    background-color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
   }
 
   #user-panel {
     flex: 0 0 40px;
     padding: 4px 10px;
-    border-top: 1px solid #ccc;
-    background-color: #fff;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(15, 15, 15, 0.95);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    color: #f0f0f0;
   }
 
   #user-panel select {
@@ -67,6 +187,9 @@
     margin-left: 8px;
     font-size: 13px;
     padding: 3px;
+    background-color: #111;
+    color: #f0f0f0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   /* --- Portrait mode (vertical stacking) --- */
@@ -78,7 +201,7 @@
     #graph-div {
       flex: 0 0 40vh;
       border-right: none;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     #info-container {
@@ -111,7 +234,7 @@
     #graph-div {
       flex: 1.4;
       border-bottom: none;
-      border-right: 1px solid #ccc;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     #info-container {
@@ -124,7 +247,31 @@
 </head>
 <body>
   <div id="split-container">
-    <div id="graph-div"></div>
+    <div id="graph-div">
+      <div id="graph-hotspots" aria-hidden="true">
+        <div class="hotspot-column">
+          <button class="icon-button canyoner" type="button" aria-label="Canyoning focus">
+            <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M18 20a6 6 0 1 1 12 0 6 6 0 0 1-12 0Zm6 8 8 10m-8-10-8 12m16-2 10 6m-26 4 10-10m18 6-6 12m-22-2h24" />
+            </svg>
+          </button>
+        </div>
+        <div class="hotspot-column">
+          <button class="icon-button caver" type="button" aria-label="Caving focus">
+            <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M20 24c0-6 6-12 12-12s12 6 12 12v2m0 0 8 6-8 6m-24-12-8 6 8 6m0 0v8l12 8 12-8v-8m-24 0 12 6 12-6" />
+            </svg>
+          </button>
+        </div>
+        <div class="hotspot-column">
+          <button class="icon-button rescue" type="button" aria-label="Rescue focus">
+            <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M12 42h40l6-12H6l6 12Zm12-18h16m-8 0V8m-8 42h16m-8 0v6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="info-container">
       <div id="info-panel">
         <h3>Select a node</h3>
