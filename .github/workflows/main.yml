@@ -2,7 +2,7 @@ name: 🔄 Sync Google Sheets to CSVs
 
 on:
   schedule:
-    - cron: "0 * * * *"   # every hour
+    - cron: "* * * * *"   # every minute
   workflow_dispatch:       # allow manual trigger
 
 permissions:
@@ -22,16 +22,43 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 📥 Download Google Sheets as CSV
+      - name: 📥 Download Google Sheets as CSV when changed
         run: |
-          echo "⬇️ Downloading definition.csv..."
-          curl -L "https://docs.google.com/spreadsheets/d/1TiKDHGDLdDtzuPecKuGMR_Bh_nGs9FKKw75IjXQ43YI/export?format=csv" -o definition.csv
+          set -euo pipefail
 
-          echo "⬇️ Downloading user_progress.csv..."
-          curl -L "https://docs.google.com/spreadsheets/d/1jUTLoRPed6HDuUb9cCZXaPJ9GRIjEfXpbYd63jPk32I/export?format=csv" -o user_progress.csv
+          check_and_download() {
+            local file_id="$1"
+            local output="$2"
+            local export_url="https://docs.google.com/spreadsheets/d/${file_id}/export?format=csv"
+            local metadata_url="https://www.googleapis.com/drive/v3/files/${file_id}?fields=md5Checksum"
+            local remote_md5=""
+            local local_md5=""
 
-          echo "✅ Files downloaded:"
-          ls -lh *.csv
+            echo "🔍 Checking ${output}..."
+            if ! remote_md5=$(curl -fsSL "${metadata_url}" | python -c 'import sys, json; print(json.load(sys.stdin).get("md5Checksum", ""))'); then
+              remote_md5=""
+            fi
+
+            if [ -z "${remote_md5}" ]; then
+              echo "⚠️ Unable to read remote checksum for ${output}; downloading to ensure freshness."
+            elif [ -f "${output}" ]; then
+              local_md5=$(md5sum "${output}" | awk '{print $1}')
+              if [ "${remote_md5}" = "${local_md5}" ]; then
+                echo "ℹ️ No changes detected for ${output}; skipping download."
+                return
+              fi
+            fi
+
+            echo "⬇️ Downloading ${output}..."
+            curl -fsSL "${export_url}" -o "${output}.tmp"
+            mv "${output}.tmp" "${output}"
+            echo "✅ Updated ${output}"
+          }
+
+          check_and_download "1TiKDHGDLdDtzuPecKuGMR_Bh_nGs9FKKw75IjXQ43YI" "definition.csv"
+          check_and_download "1jUTLoRPed6HDuUb9cCZXaPJ9GRIjEfXpbYd63jPk32I" "user_progress.csv"
+
+          echo "✅ Sync step complete."
 
       - name: 🧹 Commit and push updates
         run: |
