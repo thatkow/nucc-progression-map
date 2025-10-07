@@ -145,7 +145,7 @@
     <div id="graph-div"></div>
     <div id="info-container">
       <div id="info-panel">
-        <h3>Select a node</h3>
+        <h3 id="placeholder-heading">Select a node</h3>
         <div id="info-text"></div>
         <div id="image-wrapper"></div>
       </div>
@@ -188,6 +188,10 @@
     );
 
     const container = document.getElementById('graph-div');
+    const placeholderHeading = document.getElementById('placeholder-heading');
+    if (placeholderHeading) {
+      placeholderHeading.hidden = false;
+    }
 
     const iconCache = {};
 
@@ -468,6 +472,9 @@
       if (selectedNodeId === nodeId) return;
       const previous = selectedNodeId;
       selectedNodeId = nodeId;
+      if (placeholderHeading) {
+        placeholderHeading.hidden = !!selectedNodeId;
+      }
       if (previous) {
         const visual = nodeVisualState(previous, progressMap);
         nodes.update({
@@ -533,6 +540,9 @@
         const imagePanel = document.getElementById('image-wrapper');
         info.innerHTML = "";
         imagePanel.innerHTML = "";
+        if (placeholderHeading) {
+          placeholderHeading.hidden = false;
+        }
       }
     });
 
